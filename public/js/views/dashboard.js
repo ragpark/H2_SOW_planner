@@ -15,8 +15,32 @@ export function dashboardView({ schemes, library, catalogue, canEdit, reload, lt
   });
 
   const curriculum = el('select', {},
-    spines.map((s) => el('option', { value: s.id, text: s.title, selected: s.id === initialSpine?.id }))
+    spines.map((s) =>
+      el('option', {
+        value: s.id,
+        text: s.contentStatus === 'statements-only' ? `${s.title} — statements only` : s.title,
+        selected: s.id === initialSpine?.id
+      })
+    )
   );
+
+  // A curriculum with no units can be audited for coverage but not planned
+  // from, so say so rather than offering an auto-plan that yields nothing.
+  const contentNotice = el('div', { class: 'callout', hidden: true });
+  const syncContentNotice = () => {
+    const spine = spines.find((s) => s.id === curriculum.value) || initialSpine;
+    const statementsOnly = spine?.contentStatus === 'statements-only';
+    contentNotice.hidden = !statementsOnly;
+    if (statementsOnly) {
+      contentNotice.replaceChildren(
+        el('strong', { text: `${spine.title} has no units yet. ` }),
+        `Its ${spine.statementCount} programme of study statements are installed, so you can create a ` +
+          'scheme and see the coverage picture, but there is nothing to lay out until units are written.'
+      );
+    }
+    autoPlan.disabled = statementsOnly;
+    if (statementsOnly) autoPlan.checked = false;
+  };
 
   const yearGroupOptions = () => {
     const spine = spines.find((s) => s.id === curriculum.value) || initialSpine;
@@ -34,12 +58,15 @@ export function dashboardView({ schemes, library, catalogue, canEdit, reload, lt
     if (spine) {
       title.placeholder = `Year ${spine.defaultYearGroup} ${spine.subjectTitle} — Set 2`;
     }
+    syncContentNotice();
   });
   const lessonsPerWeek = el('select', {}, [1, 2, 3, 4].map((n) =>
     el('option', { value: String(n), text: `${n} lesson${n === 1 ? '' : 's'} a week`, selected: n === 2 })
   ));
   const academicYear = el('input', { type: 'text', placeholder: '2026/27' });
   const autoPlan = el('input', { type: 'checkbox', checked: true });
+
+  queueMicrotask(syncContentNotice);
 
   const createCard = el('div', { class: 'card' },
     el('div', { class: 'card__head' }, el('h2', { text: 'Start a new scheme of work' })),
@@ -51,6 +78,7 @@ export function dashboardView({ schemes, library, catalogue, canEdit, reload, lt
         field('Teaching time', lessonsPerWeek),
         field('Academic year', academicYear)
       ),
+      contentNotice,
       el('label', { class: 'row small', style: { gap: '.5rem' } },
         autoPlan,
         'Lay out the suggested sequence for me (you can change everything afterwards)'

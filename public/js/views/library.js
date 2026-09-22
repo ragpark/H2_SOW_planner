@@ -42,7 +42,17 @@ export function libraryView({ library, catalogue, onSpineChange }) {
 
     el('div', {},
       el('h2', { style: { marginBottom: '.75rem' }, text: 'Units' }),
-      el('div', { class: 'unitgrid' }, library.units.map((u) => unitCard(u)))
+      library.units.length
+        ? el('div', { class: 'unitgrid' }, library.units.map((u) => unitCard(u)))
+        : el('div', { class: 'empty' },
+            el('h3', { text: 'No units written yet' }),
+            el('p', {
+              text:
+                `${library.title} has its ${library.strands.reduce((n, s) => n + s.statements.length, 0)} ` +
+                'programme of study statements installed, so coverage can be checked against it, but no ' +
+                'units or lessons have been authored.'
+            })
+          )
     ),
 
     el('p', { class: 'small muted', text: `Curriculum statements: ${library.source}` })

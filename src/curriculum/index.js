@@ -99,6 +99,11 @@ function loadSpine(dir) {
     yearGroups: manifest.yearGroups || [],
     defaultYearGroup: manifest.defaultYearGroup ?? manifest.yearGroups?.at(-1) ?? 9,
     source: manifest.source || '',
+    // 'statements-only' is a spine with a programme of study but no units yet:
+    // useful for coverage and for making a subject visible before its content
+    // is written. Declaring it explicitly means an empty units/ directory is
+    // still caught as a mistake.
+    contentStatus: manifest.contentStatus || 'complete',
     strands,
     units,
     prerequisites: manifest.prerequisites || {},
@@ -160,7 +165,14 @@ export function validateCurriculum() {
         `${spine.id}: id must be "${spineIdFor(spine.subject, spine.keyStage)}" for subject/keyStage`
       );
     }
-    if (spine.units.length === 0) errors.push(`${spine.id}: has no units`);
+    if (spine.units.length === 0 && spine.contentStatus !== 'statements-only') {
+      errors.push(
+        `${spine.id}: has no units — declare "contentStatus": "statements-only" in the manifest if that is deliberate`
+      );
+    }
+    if (spine.units.length > 0 && spine.contentStatus === 'statements-only') {
+      errors.push(`${spine.id}: is declared statements-only but defines ${spine.units.length} units`);
+    }
 
     for (const unit of spine.units) {
       if (seenUnitIds.has(unit.id)) {
@@ -231,6 +243,7 @@ export const spineSummary = (spine) => ({
   yearGroups: spine.yearGroups,
   defaultYearGroup: spine.defaultYearGroup,
   source: spine.source,
+  contentStatus: spine.contentStatus,
   unitCount: spine.units.length,
   lessonCount: spine.totalLessons(),
   statementCount: spine.allStatements().length
@@ -247,14 +260,21 @@ export const registry = {
     return spines.get(spineIdFor(subject, keyStage)) || null;
   },
 
+  /** Spines that actually have units, and so can be planned with. */
+  plannable: () => registry.list().filter((s) => s.units.length > 0),
+
   /**
    * The spine to use when nothing has said which. An explicit DEFAULT_SPINE
-   * wins; otherwise a single installed spine is unambiguous, and beyond that
-   * the caller must choose.
+   * wins; otherwise a single plannable spine is unambiguous, and beyond that
+   * the caller must choose. A statements-only spine never becomes the default
+   * by accident: it is visible and selectable, but planning against it is a
+   * deliberate choice.
    */
   default: () => {
     const preferred = process.env.DEFAULT_SPINE;
     if (preferred && spines.has(preferred)) return spines.get(preferred);
+    const plannable = registry.plannable();
+    if (plannable.length === 1) return plannable[0];
     const all = registry.list();
     return all.length === 1 ? all[0] : null;
   },

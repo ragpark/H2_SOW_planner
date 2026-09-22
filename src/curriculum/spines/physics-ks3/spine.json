@@ -1,0 +1,97 @@
+{
+  "strands": [
+    {
+      "id": "en",
+      "title": "Energy",
+      "statements": [
+        { "id": "en.1", "text": "Comparing energy values of different foods (from labels) (kJ)." },
+        { "id": "en.2", "text": "Comparing power ratings of appliances in watts (W, kW)." },
+        { "id": "en.3", "text": "Comparing amounts of energy transferred (J, kJ, kW hour)." },
+        { "id": "en.4", "text": "Domestic fuel bills, fuel use and costs." },
+        { "id": "en.5", "text": "Fuels and energy resources." },
+        { "id": "en.6", "text": "Simple machines give bigger force but at the expense of smaller movement (and vice versa): product of force and displacement unchanged." },
+        { "id": "en.7", "text": "Heating and thermal equilibrium: temperature difference between two objects leading to energy transfer from the hotter to the cooler one, through contact (conduction) or radiation; such transfers tending to reduce the temperature difference: use of insulators." },
+        { "id": "en.8", "text": "Other processes that involve energy transfer: changing motion, dropping an object, completing an electrical circuit, stretching a spring, metabolism of food, burning fuels." },
+        { "id": "en.9", "text": "Energy as a quantity that can be quantified and calculated; the total energy has the same value before and after a change." },
+        { "id": "en.10", "text": "Comparing the starting with the final conditions of a system and describing increases and decreases in the amounts of energy associated with movements, temperatures, changes in positions in a field, in elastic distortions and in chemical compositions." },
+        { "id": "en.11", "text": "Using physical processes and mechanisms, rather than energy, to explain the intermediate steps that bring about such changes." }
+      ]
+    },
+    {
+      "id": "mf",
+      "title": "Motion and forces",
+      "statements": [
+        { "id": "mf.1", "text": "Speed and the quantitative relationship between average speed, distance and time (speed = distance ÷ time)." },
+        { "id": "mf.2", "text": "The representation of a journey on a distance-time graph." },
+        { "id": "mf.3", "text": "Relative motion: trains and cars passing one another." },
+        { "id": "mf.4", "text": "Forces as pushes or pulls, arising from the interaction between two objects." },
+        { "id": "mf.5", "text": "Using force arrows in diagrams, adding forces in one dimension, balanced and unbalanced forces." },
+        { "id": "mf.6", "text": "Moment as the turning effect of a force." },
+        { "id": "mf.7", "text": "Forces associated with deforming objects; stretching and squashing — springs; with rubbing and friction between surfaces, with pushing things out of the way; resistance to motion of air and water." },
+        { "id": "mf.8", "text": "Forces measured in newtons, measurements of stretch or compression as force is changed." },
+        { "id": "mf.9", "text": "Force-extension linear relation; Hooke's Law as a special case." },
+        { "id": "mf.10", "text": "Work done and energy changes on deformation." },
+        { "id": "mf.11", "text": "Non-contact forces: gravity forces acting at a distance on Earth and in space, forces between magnets and forces due to static electricity." },
+        { "id": "mf.12", "text": "Change depending on direction of force and its size." }
+      ]
+    },
+    {
+      "id": "wv",
+      "title": "Waves",
+      "statements": [
+        { "id": "wv.1", "text": "Waves on water as undulations which travel through water with transverse motion; these waves can be reflected, and add or cancel — superposition." },
+        { "id": "wv.2", "text": "Frequencies of sound waves, measured in hertz (Hz); echoes, reflection and absorption of sound." },
+        { "id": "wv.3", "text": "Sound needs a medium to travel, the speed of sound in air, in water, in solids." },
+        { "id": "wv.4", "text": "Sound produced by vibrations of objects, in loudspeakers, detected by their effects on a microphone diaphragm and the ear drum; sound waves are longitudinal." },
+        { "id": "wv.5", "text": "Auditory range of humans and animals." },
+        { "id": "wv.6", "text": "Pressure waves transferring energy; use for cleaning and physiotherapy by ultrasound; waves transferring information for conversion to electrical signals by microphone." },
+        { "id": "wv.7", "text": "The similarities and differences between light waves and waves in matter." },
+        { "id": "wv.8", "text": "Light waves travelling through a vacuum; speed of light." },
+        { "id": "wv.9", "text": "The transmission of light through materials: absorption, diffuse scattering and specular reflection at a surface." },
+        { "id": "wv.10", "text": "Use of ray model to explain imaging in mirrors, the pinhole camera, the refraction of light and action of convex lens in focusing (qualitative); the human eye." },
+        { "id": "wv.11", "text": "Light transferring energy from source to absorber, leading to chemical and electrical effects; photosensitive material in the retina and in cameras." },
+        { "id": "wv.12", "text": "Colours and the different frequencies of light, white light and prisms (qualitative only); differential colour effects in absorption and diffuse reflection." }
+      ]
+    },
+    {
+      "id": "ee",
+      "title": "Electricity and electromagnetism",
+      "statements": [
+        { "id": "ee.1", "text": "Electric current, measured in amperes, in circuits, series and parallel circuits, currents add where branches meet and current as flow of charge." },
+        { "id": "ee.2", "text": "Potential difference, measured in volts, battery and bulb ratings; resistance, measured in ohms, as the ratio of potential difference (p.d.) to current." },
+        { "id": "ee.3", "text": "Differences in resistance between conducting and insulating components (quantitative)." },
+        { "id": "ee.4", "text": "Separation of positive or negative charges when objects are rubbed together: transfer of electrons, forces between charged objects." },
+        { "id": "ee.5", "text": "The idea of electric field, forces acting across the space between objects not in contact." },
+        { "id": "ee.6", "text": "Magnetic poles, attraction and repulsion." },
+        { "id": "ee.7", "text": "Magnetic fields by plotting with a compass, representation by field lines." },
+        { "id": "ee.8", "text": "Earth's magnetism, compass and navigation." },
+        { "id": "ee.9", "text": "The magnetic effect of a current, electromagnets, D.C. motors (principles only)." }
+      ]
+    },
+    {
+      "id": "mt",
+      "title": "Matter",
+      "statements": [
+        { "id": "mt.1", "text": "Conservation of material and of mass, and reversibility, in melting, freezing, evaporation, sublimation, condensation and dissolving." },
+        { "id": "mt.2", "text": "Similarities and differences, including density differences, between solids, liquids and gases." },
+        { "id": "mt.3", "text": "Brownian motion in gases." },
+        { "id": "mt.4", "text": "Diffusion in liquids and gases driven by differences in concentration." },
+        { "id": "mt.5", "text": "The difference between chemical and physical changes." },
+        { "id": "mt.6", "text": "The properties of the different states of matter (solid, liquid and gas) in terms of the particle model, including gas pressure." },
+        { "id": "mt.7", "text": "Changes of state in terms of the particle model." },
+        { "id": "mt.8", "text": "Internal energy stored in materials." },
+        { "id": "mt.9", "text": "Atoms and molecules as particles." }
+      ]
+    },
+    {
+      "id": "sp",
+      "title": "Space physics",
+      "statements": [
+        { "id": "sp.1", "text": "Gravity force, weight = mass × gravitational field strength (g), on Earth g = 10 N/kg, different on other planets and stars; gravity forces between Earth and Moon, and between Earth and Sun (qualitative only)." },
+        { "id": "sp.2", "text": "Our Sun as a star, other stars in our galaxy, other galaxies." },
+        { "id": "sp.3", "text": "The seasons and the Earth's tilt, day length at different times of year, in different hemispheres." },
+        { "id": "sp.4", "text": "The light year as a unit of astronomical distance." }
+      ]
+    }
+  ]
+}

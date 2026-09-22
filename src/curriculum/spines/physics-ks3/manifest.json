@@ -1,0 +1,14 @@
+{
+  "id": "physics-ks3",
+  "subject": "physics",
+  "subjectTitle": "Physics",
+  "keyStage": "KS3",
+  "keyStageTitle": "Key stage 3",
+  "title": "Key stage 3 Physics",
+  "yearGroups": [7, 8, 9],
+  "defaultYearGroup": 9,
+  "source": "National curriculum in England: science programmes of study — key stage 3 (DfE)",
+  "sharedStrands": ["working-scientifically"],
+  "contentStatus": "statements-only",
+  "prerequisites": {}
+}

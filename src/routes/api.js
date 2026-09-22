@@ -78,6 +78,10 @@ export function apiRouter() {
       subjects: registry.subjects(),
       keyStages: registry.keyStages(),
       default: registry.default()?.id ?? null,
+      // A curriculum with statements but no units can be audited for coverage
+      // but not planned from, so the client can say so rather than offering an
+      // auto-plan that would produce nothing.
+      plannable: registry.plannable().map((s) => s.id),
       defaultTerms: DEFAULT_TERMS
     });
   });

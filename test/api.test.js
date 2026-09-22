@@ -18,20 +18,50 @@ test('health check reports the store and the installed curricula', async () => {
   const res = await call('GET', '/healthz');
   assert.equal(res.status, 200);
   assert.equal(res.body.store, 'postgres');
-  assert.deepEqual(res.body.curricula, ['chemistry-ks3']);
+  assert.deepEqual(res.body.curricula.sort(), ['chemistry-ks3', 'physics-ks3']);
 });
 
 test('the installed curricula are listed for the client to choose from', async () => {
   const res = await call('GET', '/api/subjects', { token });
   assert.equal(res.status, 200);
-  assert.deepEqual(res.body.subjects, ['chemistry']);
+  assert.deepEqual(res.body.subjects, ['chemistry', 'physics']);
   assert.deepEqual(res.body.keyStages, ['KS3']);
+
+  const chemistry = res.body.spines.find((s) => s.id === 'chemistry-ks3');
+  assert.equal(chemistry.keyStageTitle, 'Key stage 3');
+  assert.equal(chemistry.unitCount, 9);
+  assert.equal(chemistry.lessonCount, 55);
+  assert.equal(chemistry.contentStatus, 'complete');
+
+  // Physics has a programme of study but no units yet.
+  const physics = res.body.spines.find((s) => s.id === 'physics-ks3');
+  assert.equal(physics.contentStatus, 'statements-only');
+  assert.equal(physics.unitCount, 0);
+  assert.ok(physics.statementCount > 50);
+
+  // A statements-only curriculum never becomes the default by accident, so a
+  // deployment with one complete curriculum keeps its unambiguous behaviour.
   assert.equal(res.body.default, 'chemistry-ks3');
-  const spine = res.body.spines[0];
-  assert.equal(spine.id, 'chemistry-ks3');
-  assert.equal(spine.keyStageTitle, 'Key stage 3');
-  assert.equal(spine.unitCount, 9);
-  assert.equal(spine.lessonCount, 55);
+  assert.deepEqual(res.body.plannable, ['chemistry-ks3']);
+});
+
+test('a statements-only curriculum is offered for coverage but plans to nothing', async () => {
+  const physics = await call('GET', '/api/curriculum?spine=physics-ks3', { token });
+  assert.equal(physics.status, 200);
+  assert.equal(physics.body.unitCount, 0);
+  assert.ok(physics.body.strands.some((s) => s.id === 'wv'), 'waves strand is present');
+  assert.ok(physics.body.strands.some((s) => s.id === 'ws'), 'shared working scientifically is included');
+
+  // A scheme can still be created against it — useful for auditing coverage —
+  // and honestly reports that nothing is covered.
+  const scheme = await call('POST', '/api/schemes', {
+    token,
+    body: { title: 'Physics audit', subject: 'physics', keyStage: 'KS3', autoPlan: true }
+  });
+  assert.equal(scheme.status, 201);
+  assert.equal(scheme.body.placements.length, 0);
+  assert.equal(scheme.body.stats.coveragePercent, 0);
+  assert.ok(scheme.body.findings.some((f) => f.code === 'empty-scheme'));
 });
 
 test('the api refuses anonymous access to the curriculum and to schemes', async () => {
