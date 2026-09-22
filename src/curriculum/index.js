@@ -1,57 +1,131 @@
-import { readFileSync, readdirSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
 const readJson = (p) => JSON.parse(readFileSync(p, 'utf8'));
 
-const nc = readJson(join(here, 'nc-ks3-chemistry.json'));
-
-const unitFiles = readdirSync(join(here, 'units'))
-  .filter((f) => f.endsWith('.json'))
-  .sort();
-
-const units = unitFiles.map((f) => readJson(join(here, 'units', f)));
-
 /**
- * Units that should normally be taught before a given unit. Used by the
- * sequencing checker to warn a teacher when the order they have chosen
- * asks pupils to use knowledge they have not met yet.
+ * A curriculum spine is one (subject, key stage) pair: its programme of study
+ * statements, its units, and the order they assume. Spines are data packages
+ * loaded from disk, so adding physics — or key stage 4 chemistry — means
+ * adding a directory, not changing code.
+ *
+ * Extra roots can be supplied via CURRICULUM_DIR (colon-separated) so a school
+ * can carry its own spine without forking the project.
  */
-const prerequisites = {
-  'u-atoms': ['u-particles'],
-  'u-periodic': ['u-atoms'],
-  'u-reactions': ['u-atoms', 'u-periodic'],
-  'u-acids': ['u-reactions'],
-  'u-metals': ['u-reactions', 'u-acids'],
-  'u-energetics': ['u-reactions'],
-  'u-earth': ['u-reactions'],
-  'u-materials': ['u-periodic', 'u-metals']
-};
-
-const statementIndex = new Map();
-for (const strand of nc.strands) {
-  for (const s of strand.statements) {
-    statementIndex.set(s.id, { ...s, strandId: strand.id, strandTitle: strand.title });
+function spineRoots() {
+  const roots = [join(here, 'spines')];
+  const extra = process.env.CURRICULUM_DIR;
+  if (extra) {
+    for (const dir of extra.split(':').map((d) => d.trim()).filter(Boolean)) {
+      roots.push(resolve(dir));
+    }
   }
+  return roots.filter((dir) => existsSync(dir));
 }
 
-const unitIndex = new Map(units.map((u) => [u.id, u]));
-
-const lessonIndex = new Map();
-for (const unit of units) {
-  for (const [i, lesson] of unit.lessons.entries()) {
-    lessonIndex.set(lesson.id, { ...lesson, unitId: unit.id, unitTitle: unit.title, indexInUnit: i });
+/** Strands shared between subjects, such as Working scientifically. */
+function loadSharedStrands() {
+  const dir = join(here, 'common');
+  const shared = new Map();
+  if (!existsSync(dir)) return shared;
+  for (const file of readdirSync(dir).filter((f) => f.endsWith('.json'))) {
+    const doc = readJson(join(dir, file));
+    shared.set(doc.id, doc);
   }
+  return shared;
 }
 
-const practicalIndex = new Map();
-for (const unit of units) {
-  for (const p of unit.practicals || []) {
-    practicalIndex.set(p.id, { ...p, unitId: unit.id, unitTitle: unit.title });
+const sharedStrands = loadSharedStrands();
+
+/** Canonical identifier for a (subject, key stage) pair. */
+export const spineIdFor = (subject, keyStage) =>
+  `${String(subject || '').toLowerCase()}-${String(keyStage || '').toLowerCase()}`;
+
+function loadSpine(dir) {
+  const manifest = readJson(join(dir, 'manifest.json'));
+  const spineDoc = existsSync(join(dir, 'spine.json')) ? readJson(join(dir, 'spine.json')) : { strands: [] };
+
+  const unitsDir = join(dir, 'units');
+  const units = existsSync(unitsDir)
+    ? readdirSync(unitsDir)
+        .filter((f) => f.endsWith('.json'))
+        .sort()
+        .map((f) => readJson(join(unitsDir, f)))
+    : [];
+
+  // Shared strands are appended so a subject's own strands read first.
+  const strands = [...(spineDoc.strands || [])];
+  for (const name of manifest.sharedStrands || []) {
+    const doc = sharedStrands.get(name);
+    if (doc) strands.push(doc.strand);
   }
+
+  const statementIndex = new Map();
+  for (const strand of strands) {
+    for (const s of strand.statements) {
+      statementIndex.set(s.id, { ...s, strandId: strand.id, strandTitle: strand.title });
+    }
+  }
+
+  const unitIndex = new Map(units.map((u) => [u.id, u]));
+
+  const lessonIndex = new Map();
+  for (const unit of units) {
+    for (const [i, lesson] of unit.lessons.entries()) {
+      lessonIndex.set(lesson.id, { ...lesson, unitId: unit.id, unitTitle: unit.title, indexInUnit: i });
+    }
+  }
+
+  const practicalIndex = new Map();
+  for (const unit of units) {
+    for (const p of unit.practicals || []) {
+      practicalIndex.set(p.id, { ...p, unitId: unit.id, unitTitle: unit.title });
+    }
+  }
+
+  const id = manifest.id || spineIdFor(manifest.subject, manifest.keyStage);
+
+  return {
+    id,
+    dir,
+    subject: manifest.subject,
+    subjectTitle: manifest.subjectTitle || manifest.subject,
+    keyStage: manifest.keyStage,
+    keyStageTitle: manifest.keyStageTitle || manifest.keyStage,
+    title: manifest.title || `${manifest.keyStage} ${manifest.subject}`,
+    yearGroups: manifest.yearGroups || [],
+    defaultYearGroup: manifest.defaultYearGroup ?? manifest.yearGroups?.at(-1) ?? 9,
+    source: manifest.source || '',
+    strands,
+    units,
+    prerequisites: manifest.prerequisites || {},
+    getStatement: (sid) => statementIndex.get(sid) || null,
+    getUnit: (uid) => unitIndex.get(uid) || null,
+    getLesson: (lid) => lessonIndex.get(lid) || null,
+    getPractical: (pid) => practicalIndex.get(pid) || null,
+    allStatements: () => [...statementIndex.values()],
+    totalLessons: () => units.reduce((n, u) => n + u.lessons.length, 0)
+  };
 }
+
+function loadAllSpines() {
+  const spines = new Map();
+  for (const root of spineRoots()) {
+    for (const entry of readdirSync(root).sort()) {
+      const dir = join(root, entry);
+      if (!statSync(dir).isDirectory()) continue;
+      if (!existsSync(join(dir, 'manifest.json'))) continue;
+      const spine = loadSpine(dir);
+      spines.set(spine.id, spine);
+    }
+  }
+  return spines;
+}
+
+let spines = loadAllSpines();
 
 /** All NC statement ids a unit touches, from the unit header and its lessons. */
 export function unitStatementIds(unit) {
@@ -64,39 +138,73 @@ export function unitStatementIds(unit) {
 }
 
 /**
- * Referential integrity check over the bundled content. Run at boot so a bad
+ * Referential integrity across every installed spine. Run at boot so a bad
  * content edit fails loudly rather than silently producing wrong coverage.
  */
 export function validateCurriculum() {
   const errors = [];
-  const seenUnitIds = new Set();
-  for (const unit of units) {
-    if (seenUnitIds.has(unit.id)) errors.push(`duplicate unit id: ${unit.id}`);
-    seenUnitIds.add(unit.id);
-    const practicalIds = new Set((unit.practicals || []).map((p) => p.id));
-    for (const id of unitStatementIds(unit)) {
-      if (!statementIndex.has(id)) errors.push(`${unit.id} references unknown statement ${id}`);
+  if (spines.size === 0) errors.push('no curriculum spines were found');
+
+  // Unit and lesson ids must be unique across all spines, because a scheme
+  // stores them as bare strings. Enforcing it here means no stored id ever
+  // needs rewriting when a subject is added.
+  const seenUnitIds = new Map();
+  const seenLessonIds = new Map();
+
+  for (const spine of spines.values()) {
+    if (!spine.subject || !spine.keyStage) {
+      errors.push(`${spine.id}: manifest must declare subject and keyStage`);
     }
-    for (const lesson of unit.lessons || []) {
-      if (lesson.practical && !practicalIds.has(lesson.practical)) {
-        errors.push(`${lesson.id} references unknown practical ${lesson.practical}`);
+    if (spine.id !== spineIdFor(spine.subject, spine.keyStage)) {
+      errors.push(
+        `${spine.id}: id must be "${spineIdFor(spine.subject, spine.keyStage)}" for subject/keyStage`
+      );
+    }
+    if (spine.units.length === 0) errors.push(`${spine.id}: has no units`);
+
+    for (const unit of spine.units) {
+      if (seenUnitIds.has(unit.id)) {
+        errors.push(`unit id "${unit.id}" is used by both ${seenUnitIds.get(unit.id)} and ${spine.id}`);
+      }
+      seenUnitIds.set(unit.id, spine.id);
+
+      const practicalIds = new Set((unit.practicals || []).map((p) => p.id));
+      for (const id of unitStatementIds(unit)) {
+        if (!spine.getStatement(id)) errors.push(`${spine.id}/${unit.id} references unknown statement ${id}`);
+      }
+      for (const lesson of unit.lessons || []) {
+        if (seenLessonIds.has(lesson.id)) {
+          errors.push(`lesson id "${lesson.id}" is used by both ${seenLessonIds.get(lesson.id)} and ${spine.id}`);
+        }
+        seenLessonIds.set(lesson.id, spine.id);
+        if (lesson.practical && !practicalIds.has(lesson.practical)) {
+          errors.push(`${spine.id}/${lesson.id} references unknown practical ${lesson.practical}`);
+        }
+      }
+      if (unit.lessons.length !== unit.suggestedLessons) {
+        errors.push(
+          `${spine.id}/${unit.id} declares ${unit.suggestedLessons} lessons but defines ${unit.lessons.length}`
+        );
       }
     }
-    if (unit.lessons.length !== unit.suggestedLessons) {
-      errors.push(`${unit.id} declares ${unit.suggestedLessons} lessons but defines ${unit.lessons.length}`);
+
+    for (const [unitId, reqs] of Object.entries(spine.prerequisites)) {
+      if (!spine.getUnit(unitId)) errors.push(`${spine.id}: prerequisite map references unknown unit ${unitId}`);
+      for (const r of reqs) {
+        if (!spine.getUnit(r)) errors.push(`${spine.id}: ${unitId} requires unknown unit ${r}`);
+      }
     }
-  }
-  for (const [unitId, reqs] of Object.entries(prerequisites)) {
-    if (!seenUnitIds.has(unitId)) errors.push(`prerequisite map references unknown unit ${unitId}`);
-    for (const r of reqs) if (!seenUnitIds.has(r)) errors.push(`${unitId} requires unknown unit ${r}`);
   }
   return errors;
 }
 
 /** Compact unit shape for list views — omits the heavy lesson bodies. */
-export function unitSummary(unit) {
+export function unitSummary(spine, unit) {
   return {
     id: unit.id,
+    spineId: spine.id,
+    subject: spine.subject,
+    keyStage: spine.keyStage,
     title: unit.title,
     strapline: unit.strapline,
     bigIdea: unit.bigIdea,
@@ -107,22 +215,59 @@ export function unitSummary(unit) {
     statementIds: unitStatementIds(unit),
     ncRefs: unit.ncRefs || [],
     wsRefs: unit.wsRefs || [],
-    prerequisites: prerequisites[unit.id] || [],
+    prerequisites: spine.prerequisites[unit.id] || [],
     misconceptionCount: (unit.misconceptions || []).length
   };
 }
 
-export const curriculum = {
-  subject: nc.subject,
-  keyStage: nc.keyStage,
-  source: nc.source,
-  strands: nc.strands,
-  units,
-  prerequisites,
-  getStatement: (id) => statementIndex.get(id) || null,
-  getUnit: (id) => unitIndex.get(id) || null,
-  getLesson: (id) => lessonIndex.get(id) || null,
-  getPractical: (id) => practicalIndex.get(id) || null,
-  allStatements: () => [...statementIndex.values()],
-  totalLessons: () => units.reduce((n, u) => n + u.lessons.length, 0)
+/** Headline description of a spine, for pickers and listings. */
+export const spineSummary = (spine) => ({
+  id: spine.id,
+  subject: spine.subject,
+  subjectTitle: spine.subjectTitle,
+  keyStage: spine.keyStage,
+  keyStageTitle: spine.keyStageTitle,
+  title: spine.title,
+  yearGroups: spine.yearGroups,
+  defaultYearGroup: spine.defaultYearGroup,
+  source: spine.source,
+  unitCount: spine.units.length,
+  lessonCount: spine.totalLessons(),
+  statementCount: spine.allStatements().length
+});
+
+export const registry = {
+  list: () => [...spines.values()].sort((a, b) => a.title.localeCompare(b.title)),
+  summaries: () => registry.list().map(spineSummary),
+  get: (id) => spines.get(id) || null,
+
+  /** Resolve a (subject, key stage) pair to an installed spine. */
+  resolve: ({ subject, keyStage } = {}) => {
+    if (!subject || !keyStage) return null;
+    return spines.get(spineIdFor(subject, keyStage)) || null;
+  },
+
+  /**
+   * The spine to use when nothing has said which. An explicit DEFAULT_SPINE
+   * wins; otherwise a single installed spine is unambiguous, and beyond that
+   * the caller must choose.
+   */
+  default: () => {
+    const preferred = process.env.DEFAULT_SPINE;
+    if (preferred && spines.has(preferred)) return spines.get(preferred);
+    const all = registry.list();
+    return all.length === 1 ? all[0] : null;
+  },
+
+  /** Find whichever spine owns a unit id — ids are unique across spines. */
+  findByUnitId: (unitId) => registry.list().find((s) => s.getUnit(unitId)) || null,
+
+  subjects: () => [...new Set(registry.list().map((s) => s.subject))].sort(),
+  keyStages: () => [...new Set(registry.list().map((s) => s.keyStage))].sort(),
+
+  /** Test helper: reload from disk after changing CURRICULUM_DIR. */
+  reload: () => {
+    spines = loadAllSpines();
+    return registry;
+  }
 };

@@ -1,0 +1,51 @@
+{
+  "id": "working-scientifically",
+  "keyStage": "KS3",
+  "source": "National curriculum in England: science programmes of study — key stage 3 (DfE)",
+  "strand": {
+    "id": "ws",
+    "title": "Working scientifically",
+    "statements": [
+      {
+        "id": "ws.1",
+        "text": "Ask questions and develop a line of enquiry based on observations of the real world, alongside prior knowledge and experience."
+      },
+      {
+        "id": "ws.2",
+        "text": "Make predictions using scientific knowledge and understanding."
+      },
+      {
+        "id": "ws.3",
+        "text": "Select, plan and carry out the most appropriate types of scientific enquiries to test predictions, including identifying independent, dependent and control variables."
+      },
+      {
+        "id": "ws.4",
+        "text": "Use appropriate techniques, apparatus, and materials during fieldwork and laboratory work, paying attention to health and safety."
+      },
+      {
+        "id": "ws.5",
+        "text": "Make and record observations and measurements using a range of methods for different investigations; evaluate the reliability of methods and suggest possible improvements."
+      },
+      {
+        "id": "ws.6",
+        "text": "Apply mathematical concepts and calculate results; present observations using appropriate methods including tables and graphs."
+      },
+      {
+        "id": "ws.7",
+        "text": "Interpret observations and data, including identifying patterns and using observations, measurements and data to draw conclusions."
+      },
+      {
+        "id": "ws.8",
+        "text": "Present reasoned explanations, including explaining data in relation to predictions and hypotheses; evaluate data, showing awareness of potential sources of random and systematic error."
+      },
+      {
+        "id": "ws.9",
+        "text": "Understand that scientific methods and theories develop as earlier explanations are modified to take account of new evidence and ideas."
+      },
+      {
+        "id": "ws.10",
+        "text": "Pay attention to objectivity and concern for accuracy, precision, repeatability and reproducibility."
+      }
+    ]
+  }
+}

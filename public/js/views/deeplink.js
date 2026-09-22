@@ -5,7 +5,7 @@ import { badge, el, toast } from '../dom.js';
  * Deep Linking picker. The teacher chooses what the LMS link should open, and
  * the tool posts a signed response back to the platform.
  */
-export function deepLinkView({ schemes, library, ltiContext }) {
+export function deepLinkView({ schemes, library, catalogue, ltiContext }) {
   const selected = new Set();
   const submitBtn = el('button', { class: 'btn btn--primary', type: 'button', disabled: true }, 'Add to course');
 
@@ -70,11 +70,20 @@ export function deepLinkView({ schemes, library, ltiContext }) {
           el('div', { class: 'card__head' }, el('h2', { text: 'Your schemes of work' })),
           el('div', { class: 'card__body card__body--flush' },
             schemes.map((s) =>
-              option('Scheme', s.title, `Year ${s.yearGroup} · ${s.stats.unitCount} units · ${s.stats.coveragePercent}% coverage`, {
-                schemeId: s.id,
-                title: s.title,
-                text: `Scheme of work: ${s.stats.unitCount} units, ${s.stats.lessonsAllocated} lessons.`
-              })
+              option(
+                'Scheme',
+                s.title,
+                s.stats
+                  ? `${s.spineTitle} · Year ${s.yearGroup} · ${s.stats.unitCount} units · ${s.stats.coveragePercent}% coverage`
+                  : `${s.spineTitle} · curriculum not installed`,
+                {
+                  schemeId: s.id,
+                  title: s.title,
+                  text: s.stats
+                    ? `Scheme of work: ${s.stats.unitCount} units, ${s.stats.lessonsAllocated} lessons.`
+                    : 'Scheme of work.'
+                }
+              )
             )
           )
         )
@@ -85,7 +94,10 @@ export function deepLinkView({ schemes, library, ltiContext }) {
         ),
 
     el('div', { class: 'card' },
-      el('div', { class: 'card__head' }, el('h2', { text: 'Individual units' })),
+      el('div', { class: 'card__head' },
+        el('h2', { text: 'Individual units' }),
+        (catalogue?.spines || []).length > 1 ? badge(library.title) : null
+      ),
       el('div', { class: 'card__body card__body--flush' },
         library.units.map((u) =>
           option('Unit', u.title, `${u.suggestedLessons} lessons · ${u.practicalCount} practicals`, {

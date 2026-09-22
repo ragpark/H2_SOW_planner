@@ -14,10 +14,24 @@ after(async () => { await server.close(); });
 
 const call = (...args) => server.call(...args);
 
-test('health check reports the subject the tool is configured for', async () => {
+test('health check reports the store and the installed curricula', async () => {
   const res = await call('GET', '/healthz');
   assert.equal(res.status, 200);
-  assert.equal(res.body.subject, 'chemistry');
+  assert.equal(res.body.store, 'postgres');
+  assert.deepEqual(res.body.curricula, ['chemistry-ks3']);
+});
+
+test('the installed curricula are listed for the client to choose from', async () => {
+  const res = await call('GET', '/api/subjects', { token });
+  assert.equal(res.status, 200);
+  assert.deepEqual(res.body.subjects, ['chemistry']);
+  assert.deepEqual(res.body.keyStages, ['KS3']);
+  assert.equal(res.body.default, 'chemistry-ks3');
+  const spine = res.body.spines[0];
+  assert.equal(spine.id, 'chemistry-ks3');
+  assert.equal(spine.keyStageTitle, 'Key stage 3');
+  assert.equal(spine.unitCount, 9);
+  assert.equal(spine.lessonCount, 55);
 });
 
 test('the api refuses anonymous access to the curriculum and to schemes', async () => {
@@ -37,6 +51,8 @@ test('the curriculum library is served with units and statements', async () => {
   const res = await call('GET', '/api/curriculum', { token });
   assert.equal(res.status, 200);
   assert.equal(res.body.subject, 'chemistry');
+  assert.equal(res.body.keyStage, 'KS3');
+  assert.equal(res.body.id, 'chemistry-ks3');
   assert.ok(res.body.units.length >= 9);
   assert.ok(res.body.strands.some((s) => s.id === 'ws'));
   assert.ok(res.body.units[0].statementIds.length > 0);
@@ -64,6 +80,10 @@ test('creating a scheme with auto-plan produces a full, covered year', async () 
   });
   assert.equal(res.status, 201);
   assert.equal(res.body.scheme.title, 'Y9 Chemistry Set 2');
+  // With one curriculum installed, the subject and key stage need not be given.
+  assert.equal(res.body.scheme.subject, 'chemistry');
+  assert.equal(res.body.scheme.keyStage, 'KS3');
+  assert.equal(res.body.scheme.spineId, 'chemistry-ks3');
   assert.equal(res.body.stats.coveragePercent, 100);
   assert.ok(res.body.placements.length >= 9);
   assert.ok(res.body.timeline.weeks.length > 30);
@@ -77,6 +97,19 @@ test('a scheme rejects nonsense configuration', async () => {
   assert.equal(badYear.status, 400);
   const badTerms = await call('POST', '/api/schemes', { token, body: { terms: [{ name: 'x', weeks: 0 }] } });
   assert.equal(badTerms.status, 400);
+
+  const noSuchSubject = await call('POST', '/api/schemes', {
+    token,
+    body: { subject: 'astrology', keyStage: 'KS3' }
+  });
+  assert.equal(noSuchSubject.status, 404);
+  assert.match(noSuchSubject.body.error, /no curriculum is installed for astrology at KS3/);
+
+  const noSuchKeyStage = await call('POST', '/api/schemes', {
+    token,
+    body: { subject: 'chemistry', keyStage: 'KS5' }
+  });
+  assert.equal(noSuchKeyStage.status, 404);
 });
 
 test('units can be added, reordered, resized and removed', async () => {

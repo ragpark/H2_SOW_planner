@@ -1,0 +1,17 @@
+{
+  "strands": [
+    {
+      "id": "alpha",
+      "title": "Alpha strand",
+      "statements": [
+        { "id": "alpha.1", "text": "First alpha statement." },
+        { "id": "alpha.2", "text": "Second alpha statement." }
+      ]
+    },
+    {
+      "id": "beta",
+      "title": "Beta strand",
+      "statements": [{ "id": "beta.1", "text": "Only beta statement." }]
+    }
+  ]
+}

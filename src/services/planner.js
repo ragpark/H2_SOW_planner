@@ -1,4 +1,11 @@
-import { curriculum, unitStatementIds } from '../curriculum/index.js';
+import { unitStatementIds } from '../curriculum/index.js';
+
+/**
+ * Every function here takes the curriculum spine it should plan against, and
+ * reads nothing global. That is what makes the planner subject-agnostic: the
+ * same sequencing, coverage and review logic serves key stage 3 chemistry and
+ * key stage 4 physics alike.
+ */
 
 export const DEFAULT_TERMS = [
   { name: 'Autumn 1', weeks: 7 },
@@ -52,11 +59,11 @@ function weekForLessonIndex(calendar, lessonIndex) {
  * lessons it asks for. Units that do not fit are returned as `unplaced` rather
  * than being silently truncated — the teacher decides what to cut.
  */
-export function autoPlan({ terms = DEFAULT_TERMS, lessonsPerWeek = 2, unitIds = null, allocations = {} } = {}) {
+export function autoPlan({ spine, terms = DEFAULT_TERMS, lessonsPerWeek = 2, unitIds = null, allocations = {} } = {}) {
   const calendar = buildCalendar(terms, lessonsPerWeek);
   const ordered = (unitIds && unitIds.length
-    ? unitIds.map((id) => curriculum.getUnit(id)).filter(Boolean)
-    : [...curriculum.units].sort((a, b) => a.suggestedPosition - b.suggestedPosition));
+    ? unitIds.map((id) => spine.getUnit(id)).filter(Boolean)
+    : [...spine.units].sort((a, b) => a.suggestedPosition - b.suggestedPosition));
 
   const placements = [];
   const unplaced = [];
@@ -97,13 +104,13 @@ export function autoPlan({ terms = DEFAULT_TERMS, lessonsPerWeek = 2, unitIds = 
  * Resolve stored placements into a week-by-week timeline, with each placed
  * unit's lessons distributed across the weeks it occupies.
  */
-export function buildTimeline(scheme, placements) {
+export function buildTimeline(spine, scheme, placements) {
   const calendar = buildCalendar(scheme.terms, scheme.lessonsPerWeek);
   const byWeek = new Map(calendar.weeks.map((w) => [w.globalWeek, { ...w, entries: [] }]));
 
   const sorted = [...placements].sort((a, b) => a.position - b.position);
   for (const p of sorted) {
-    const unit = curriculum.getUnit(p.unitId);
+    const unit = spine.getUnit(p.unitId);
     if (!unit) continue;
     const startWeek = calendar.weeks.find(
       (w) => w.termIndex === p.termIndex && w.weekInTerm === p.weekInTerm
@@ -161,11 +168,11 @@ function totalWeeksNeeded(scheme, placements) {
  * in this scheme, reported per strand so a teacher can see at a glance which
  * area of the subject is thin.
  */
-export function computeCoverage(placements) {
+export function computeCoverage(spine, placements) {
   const placedUnitIds = new Set(placements.map((p) => p.unitId));
   const coveredBy = new Map();
   for (const unitId of placedUnitIds) {
-    const unit = curriculum.getUnit(unitId);
+    const unit = spine.getUnit(unitId);
     if (!unit) continue;
     for (const sid of unitStatementIds(unit)) {
       if (!coveredBy.has(sid)) coveredBy.set(sid, []);
@@ -173,7 +180,7 @@ export function computeCoverage(placements) {
     }
   }
 
-  const strands = curriculum.strands.map((strand) => {
+  const strands = spine.strands.map((strand) => {
     const statements = strand.statements.map((s) => ({
       id: s.id,
       text: s.text,
@@ -208,7 +215,7 @@ export function computeCoverage(placements) {
  * errors: a head of department may have good reasons to depart from the
  * suggested order, and the tool's job is to make the consequence visible.
  */
-export function reviewScheme(scheme, placements) {
+export function reviewScheme(spine, scheme, placements) {
   const findings = [];
   const calendar = buildCalendar(scheme.terms, scheme.lessonsPerWeek);
   const sorted = [...placements].sort((a, b) => a.position - b.position);
@@ -248,14 +255,14 @@ export function reviewScheme(scheme, placements) {
 
   // Sequencing against prerequisites
   for (const p of sorted) {
-    const reqs = curriculum.prerequisites[p.unitId] || [];
+    const reqs = spine.prerequisites[p.unitId] || [];
     for (const req of reqs) {
       if (!positionOf.has(req)) {
         findings.push({
           severity: 'warning',
           code: 'missing-prerequisite',
-          title: `${curriculum.getUnit(p.unitId)?.title} assumes knowledge that is not taught`,
-          detail: `It builds on ${curriculum.getUnit(req)?.title}, which is not in this scheme.`,
+          title: `${spine.getUnit(p.unitId)?.title} assumes knowledge that is not taught`,
+          detail: `It builds on ${spine.getUnit(req)?.title}, which is not in this scheme.`,
           action: 'Add the prerequisite unit, or plan to teach the assumed knowledge within this unit.',
           unitId: p.unitId
         });
@@ -263,8 +270,8 @@ export function reviewScheme(scheme, placements) {
         findings.push({
           severity: 'warning',
           code: 'out-of-sequence',
-          title: `${curriculum.getUnit(p.unitId)?.title} is taught before its prerequisite`,
-          detail: `${curriculum.getUnit(req)?.title} currently comes later in the year.`,
+          title: `${spine.getUnit(p.unitId)?.title} is taught before its prerequisite`,
+          detail: `${spine.getUnit(req)?.title} currently comes later in the year.`,
           action: 'Swap the two units, or check that pupils meet the prior knowledge elsewhere.',
           unitId: p.unitId
         });
@@ -273,7 +280,7 @@ export function reviewScheme(scheme, placements) {
   }
 
   // Practical science rhythm
-  const timeline = buildTimeline(scheme, placements);
+  const timeline = buildTimeline(spine, scheme, placements);
   let dryRun = 0;
   let worstDryRun = 0;
   for (const week of timeline.weeks) {
@@ -300,7 +307,7 @@ export function reviewScheme(scheme, placements) {
   const termsWithAssessment = new Set();
   for (const week of timeline.weeks) {
     for (const entry of week.entries) {
-      const unit = curriculum.getUnit(entry.unitId);
+      const unit = spine.getUnit(entry.unitId);
       if (unit?.assessment?.summative) termsWithAssessment.add(week.termIndex);
     }
   }
@@ -317,13 +324,13 @@ export function reviewScheme(scheme, placements) {
   }
 
   // Coverage gaps
-  const coverage = computeCoverage(placements);
+  const coverage = computeCoverage(spine, placements);
   if (coverage.gaps.length > 0) {
     findings.push({
       severity: coverage.percent < 80 ? 'warning' : 'info',
       code: 'coverage-gaps',
       title: `${coverage.gaps.length} programme of study statements are not covered`,
-      detail: `This scheme covers ${coverage.percent}% of the key stage 3 ${curriculum.subject} statements.`,
+      detail: `This scheme covers ${coverage.percent}% of the ${spine.title} statements.`,
       action: 'Statements not covered here should be taught in another year of the key stage.'
     });
   }
@@ -344,9 +351,9 @@ export function reviewScheme(scheme, placements) {
 }
 
 /** Headline numbers for the dashboard. */
-export function schemeStats(scheme, placements) {
+export function schemeStats(spine, scheme, placements) {
   const calendar = buildCalendar(scheme.terms, scheme.lessonsPerWeek);
-  const units = placements.map((p) => curriculum.getUnit(p.unitId)).filter(Boolean);
+  const units = placements.map((p) => spine.getUnit(p.unitId)).filter(Boolean);
   const practicals = new Set();
   let misconceptions = 0;
   let assessments = 0;
@@ -363,6 +370,6 @@ export function schemeStats(scheme, placements) {
     practicalCount: practicals.size,
     misconceptionCount: misconceptions,
     assessmentCount: assessments,
-    coveragePercent: computeCoverage(placements).percent
+    coveragePercent: computeCoverage(spine, placements).percent
   };
 }

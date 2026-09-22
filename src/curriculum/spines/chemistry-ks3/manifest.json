@@ -1,0 +1,22 @@
+{
+  "id": "chemistry-ks3",
+  "subject": "chemistry",
+  "subjectTitle": "Chemistry",
+  "keyStage": "KS3",
+  "keyStageTitle": "Key stage 3",
+  "title": "Key stage 3 Chemistry",
+  "yearGroups": [7, 8, 9],
+  "defaultYearGroup": 9,
+  "source": "National curriculum in England: science programmes of study — key stage 3 (DfE)",
+  "sharedStrands": ["working-scientifically"],
+  "prerequisites": {
+    "u-atoms": ["u-particles"],
+    "u-periodic": ["u-atoms"],
+    "u-reactions": ["u-atoms", "u-periodic"],
+    "u-acids": ["u-reactions"],
+    "u-metals": ["u-reactions", "u-acids"],
+    "u-energetics": ["u-reactions"],
+    "u-earth": ["u-reactions"],
+    "u-materials": ["u-periodic", "u-metals"]
+  }
+}

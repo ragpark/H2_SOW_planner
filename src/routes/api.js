@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { config } from '../config.js';
-import { curriculum, unitSummary } from '../curriculum/index.js';
+import { registry, spineSummary, unitSummary } from '../curriculum/index.js';
 import { DEFAULT_TERMS } from '../services/planner.js';
 import {
   createLocalUser,
@@ -67,42 +67,82 @@ export function apiRouter() {
 
   // ---------- curriculum library (readable without a scheme) ----------
 
-  router.get('/curriculum', requireSession, (_req, res) => {
+  /**
+   * Which curricula this deployment has installed. The client uses this to
+   * offer subject and key stage, and to decide whether a picker is needed at
+   * all — with one installed spine there is nothing to choose.
+   */
+  router.get('/subjects', requireSession, (_req, res) => {
     res.json({
-      subject: curriculum.subject,
-      keyStage: curriculum.keyStage,
-      source: curriculum.source,
-      strands: curriculum.strands,
-      units: curriculum.units.map(unitSummary),
+      spines: registry.summaries(),
+      subjects: registry.subjects(),
+      keyStages: registry.keyStages(),
+      default: registry.default()?.id ?? null,
+      defaultTerms: DEFAULT_TERMS
+    });
+  });
+
+  /** Resolve the spine a request is asking about, by id or subject/key stage. */
+  const spineFromQuery = (req) => {
+    if (req.query.spine) return registry.get(String(req.query.spine));
+    if (req.query.subject || req.query.keyStage) {
+      const fallback = registry.default();
+      return registry.resolve({
+        subject: String(req.query.subject || fallback?.subject || ''),
+        keyStage: String(req.query.keyStage || fallback?.keyStage || '')
+      });
+    }
+    return registry.default();
+  };
+
+  router.get('/curriculum', requireSession, (req, res) => {
+    const spine = spineFromQuery(req);
+    if (!spine) {
+      return res.status(400).json({
+        error: 'specify which curriculum with ?spine=, or ?subject= and ?keyStage=',
+        spines: registry.summaries().map((s) => s.id)
+      });
+    }
+    res.json({
+      ...spineSummary(spine),
+      strands: spine.strands,
+      units: spine.units.map((u) => unitSummary(spine, u)),
       defaultTerms: DEFAULT_TERMS,
-      totalLessons: curriculum.totalLessons()
+      totalLessons: spine.totalLessons()
     });
   });
 
   router.get('/curriculum/units/:unitId', requireSession, (req, res) => {
-    const unit = curriculum.getUnit(req.params.unitId);
-    if (!unit) return res.status(404).json({ error: 'unit not found' });
+    // Unit ids are unique across spines, so the owning curriculum is implied.
+    const spine = registry.findByUnitId(req.params.unitId);
+    if (!spine) return res.status(404).json({ error: 'unit not found' });
+    const unit = spine.getUnit(req.params.unitId);
     res.json({
       ...unit,
-      prerequisites: (curriculum.prerequisites[unit.id] || []).map((id) => ({
+      spineId: spine.id,
+      spineTitle: spine.title,
+      prerequisites: (spine.prerequisites[unit.id] || []).map((id) => ({
         id,
-        title: curriculum.getUnit(id)?.title
+        title: spine.getUnit(id)?.title
       })),
       statements: [...(unit.ncRefs || []), ...(unit.wsRefs || [])]
-        .map((id) => curriculum.getStatement(id))
+        .map((id) => spine.getStatement(id))
         .filter(Boolean)
     });
   });
 
   router.get('/curriculum/lessons/:lessonId', requireSession, (req, res) => {
-    const lesson = curriculum.getLesson(req.params.lessonId);
-    if (!lesson) return res.status(404).json({ error: 'lesson not found' });
-    const unit = curriculum.getUnit(lesson.unitId);
+    const spine = registry.list().find((s) => s.getLesson(req.params.lessonId));
+    if (!spine) return res.status(404).json({ error: 'lesson not found' });
+    const lesson = spine.getLesson(req.params.lessonId);
+    const unit = spine.getUnit(lesson.unitId);
     res.json({
       ...lesson,
-      practicalDetail: lesson.practical ? curriculum.getPractical(lesson.practical) : null,
+      spineId: spine.id,
+      spineTitle: spine.title,
+      practicalDetail: lesson.practical ? spine.getPractical(lesson.practical) : null,
       statements: [...(lesson.ncRefs || []), ...(lesson.wsRefs || [])]
-        .map((id) => curriculum.getStatement(id))
+        .map((id) => spine.getStatement(id))
         .filter(Boolean),
       misconceptions: unit?.misconceptions || [],
       keyVocabulary: unit?.keyVocabulary || []
@@ -180,7 +220,7 @@ export function apiRouter() {
 
   router.put('/schemes/:id/lessons/:lessonId', requireEditor, wrap(async (req, res) => {
     const { scheme } = await loadScheme(req, { write: true });
-    const note = await schemes.setLessonNote(scheme.id, req.params.lessonId, req.body || {});
+    const note = await schemes.setLessonNote(scheme, req.params.lessonId, req.body || {});
     res.json({ lessonId: req.params.lessonId, note });
   }));
 
@@ -189,6 +229,7 @@ export function apiRouter() {
   router.get('/schemes/:id/export', requireSession, wrap(async (req, res) => {
     const { scheme } = await loadScheme(req);
     const detail = await schemes.getSchemeDetail(scheme.id);
+    const spine = schemes.spineForScheme(scheme);
     const slug = scheme.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'scheme-of-work';
     if (req.query.format === 'json') {
       res.setHeader('Content-Disposition', `attachment; filename="${slug}.json"`);
@@ -196,13 +237,14 @@ export function apiRouter() {
     }
     res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="${slug}.md"`);
-    res.send(schemeToMarkdown(detail));
+    res.send(schemeToMarkdown(detail, spine));
   }));
 
   router.get('/schemes/:id/lessons/:lessonId/plan', requireSession, wrap(async (req, res) => {
     const { scheme } = await loadScheme(req);
     const notes = await schemes.getLessonNotes(scheme.id);
     const markdown = lessonPlanToMarkdown(req.params.lessonId, {
+      spine: schemes.spineForScheme(scheme),
       scheme,
       note: notes[req.params.lessonId] || null
     });

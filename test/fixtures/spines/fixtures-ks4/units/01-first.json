@@ -1,0 +1,63 @@
+{
+  "id": "fx-first",
+  "title": "First Fixture Unit",
+  "strapline": "A minimal unit.",
+  "bigIdea": "Fixtures exist to prove the engine carries no subject assumptions.",
+  "suggestedPosition": 1,
+  "suggestedLessons": 2,
+  "ncRefs": ["alpha.1"],
+  "wsRefs": ["ws.1"],
+  "priorKnowledge": ["None."],
+  "futureLearning": ["The second fixture unit."],
+  "misconceptions": [
+    { "misconception": "Fixtures are real.", "whyItSticks": "They look real.", "addressIt": "They are not." }
+  ],
+  "keyVocabulary": [{ "term": "fixture", "definition": "Test content." }],
+  "practicals": [
+    {
+      "id": "fx-p1",
+      "title": "A fixture practical",
+      "type": "class",
+      "apparatus": ["nothing"],
+      "hazards": ["none"],
+      "control": ["none"],
+      "timing": "10 minutes",
+      "wsFocus": ["ws.1"]
+    }
+  ],
+  "assessment": {
+    "formative": ["A check."],
+    "summative": { "title": "Fixture test", "style": "10 marks", "markSchemeNotes": "None." }
+  },
+  "lessons": [
+    {
+      "id": "fx-first.l1",
+      "title": "Fixture lesson one",
+      "objectives": ["Do the first thing"],
+      "ncRefs": ["alpha.1"],
+      "retrieval": ["Recall nothing"],
+      "sequence": [{ "phase": "Explanation", "minutes": 20, "detail": "Explain it." }],
+      "practical": "fx-p1",
+      "keyQuestions": ["Why?"],
+      "support": ["A scaffold"],
+      "challenge": ["An extension"],
+      "homework": "None.",
+      "exitTicket": "State one thing."
+    },
+    {
+      "id": "fx-first.l2",
+      "title": "Fixture lesson two",
+      "objectives": ["Do the second thing"],
+      "ncRefs": ["alpha.2"],
+      "wsRefs": ["ws.5"],
+      "retrieval": ["Recall the first thing"],
+      "sequence": [{ "phase": "Practice", "minutes": 30, "detail": "Practise it." }],
+      "practical": null,
+      "keyQuestions": ["How?"],
+      "support": [],
+      "challenge": [],
+      "homework": "None.",
+      "exitTicket": "State another thing."
+    }
+  ]
+}

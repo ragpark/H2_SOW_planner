@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { many, one, query, withTx } from '../db/index.js';
-import { curriculum } from '../curriculum/index.js';
+import { registry, spineIdFor } from '../curriculum/index.js';
 import {
   DEFAULT_TERMS,
   autoPlan,
@@ -15,6 +15,21 @@ class HttpError extends Error {
     super(message);
     this.status = status;
   }
+}
+
+/**
+ * The curriculum spine a scheme is planned against. A scheme records its
+ * subject and key stage, and those two together name the spine.
+ */
+export function spineForScheme(scheme) {
+  const spine = registry.resolve({ subject: scheme.subject, keyStage: scheme.keyStage });
+  if (!spine) {
+    throw new HttpError(
+      `no curriculum is installed for ${scheme.subject} at ${scheme.keyStage}`,
+      409
+    );
+  }
+  return spine;
 }
 
 const rowToScheme = (row) =>
@@ -56,6 +71,37 @@ function validateTerms(terms) {
   });
 }
 
+/**
+ * Pick the spine a new scheme should use. An explicit subject and key stage
+ * win; a lone installed spine (or DEFAULT_SPINE) is used when neither is given.
+ */
+function resolveRequestedSpine(input) {
+  if (input.spineId) {
+    const bySpineId = registry.get(input.spineId);
+    if (!bySpineId) throw new HttpError(`unknown curriculum ${input.spineId}`, 404);
+    return bySpineId;
+  }
+  if (input.subject || input.keyStage) {
+    const fallback = registry.default();
+    const subject = input.subject || fallback?.subject;
+    const keyStage = input.keyStage || fallback?.keyStage;
+    const resolved = registry.resolve({ subject, keyStage });
+    if (!resolved) {
+      throw new HttpError(
+        `no curriculum is installed for ${subject} at ${keyStage}. ` +
+          `Installed: ${registry.summaries().map((s) => s.id).join(', ') || 'none'}`,
+        404
+      );
+    }
+    return resolved;
+  }
+  const fallback = registry.default();
+  if (!fallback) {
+    throw new HttpError('subject and keyStage are required — more than one curriculum is installed', 400);
+  }
+  return fallback;
+}
+
 function validateLessonsPerWeek(n) {
   const v = Number(n);
   if (!Number.isInteger(v) || v < 1 || v > 10) throw new HttpError('lessonsPerWeek must be between 1 and 10');
@@ -66,7 +112,12 @@ export async function createScheme(session, input = {}) {
   const id = randomUUID();
   const terms = validateTerms(input.terms || DEFAULT_TERMS);
   const lessonsPerWeek = validateLessonsPerWeek(input.lessonsPerWeek ?? 2);
-  const yearGroup = Number(input.yearGroup ?? 9);
+
+  // A scheme is planned against exactly one installed spine, chosen when it is
+  // created and fixed thereafter — its units, coverage and prerequisites all
+  // key off it, so changing it later would orphan every placement.
+  const spine = resolveRequestedSpine(input);
+  const yearGroup = Number(input.yearGroup ?? spine.defaultYearGroup);
   if (!Number.isInteger(yearGroup) || yearGroup < 7 || yearGroup > 13) {
     throw new HttpError('yearGroup must be between 7 and 13');
   }
@@ -79,9 +130,9 @@ export async function createScheme(session, input = {}) {
       id,
       session.user.id,
       input.contextId ?? session.context?.id ?? null,
-      String(input.title || `Year ${yearGroup} Chemistry`).slice(0, 160),
-      input.subject || curriculum.subject,
-      input.keyStage || curriculum.keyStage,
+      String(input.title || `Year ${yearGroup} ${spine.subjectTitle}`).slice(0, 160),
+      spine.subject,
+      spine.keyStage,
       yearGroup,
       input.academicYear ? String(input.academicYear).slice(0, 20) : null,
       lessonsPerWeek,
@@ -91,7 +142,7 @@ export async function createScheme(session, input = {}) {
   );
 
   if (input.autoPlan) {
-    const plan = autoPlan({ terms, lessonsPerWeek, unitIds: input.unitIds || null });
+    const plan = autoPlan({ spine, terms, lessonsPerWeek, unitIds: input.unitIds || null });
     await writePlacements(id, plan.placements);
   }
   return getSchemeById(id);
@@ -147,7 +198,16 @@ export async function listSchemes(session) {
     rows.map(async (row) => {
       const scheme = rowToScheme(row);
       const placements = await getPlacements(scheme.id);
-      return { ...scheme, stats: schemeStats(scheme, placements), isOwner: scheme.ownerId === session.user.id };
+      const spine = registry.resolve({ subject: scheme.subject, keyStage: scheme.keyStage });
+      return {
+        ...scheme,
+        spineId: spine?.id ?? spineIdFor(scheme.subject, scheme.keyStage),
+        spineTitle: spine?.title ?? `${scheme.keyStage} ${scheme.subject}`,
+        // A scheme whose curriculum is no longer installed still lists, with
+        // no statistics, rather than breaking the dashboard for everything else.
+        stats: spine ? schemeStats(spine, scheme, placements) : null,
+        isOwner: scheme.ownerId === session.user.id
+      };
     })
   );
 }
@@ -192,8 +252,19 @@ export async function deleteScheme(schemeId) {
 }
 
 export async function addUnit(scheme, { unitId, lessonsAllocated, position }) {
-  const unit = curriculum.getUnit(unitId);
-  if (!unit) throw new HttpError(`unknown unit ${unitId}`, 404);
+  const spine = spineForScheme(scheme);
+  const unit = spine.getUnit(unitId);
+  // Unit ids are unique across spines, so a unit from another subject resolves
+  // elsewhere and must be reported as belonging to a different curriculum.
+  if (!unit) {
+    const owner = registry.findByUnitId(unitId);
+    throw new HttpError(
+      owner
+        ? `unit ${unitId} belongs to ${owner.title}, not this scheme's ${spine.title}`
+        : `unknown unit ${unitId}`,
+      owner ? 409 : 404
+    );
+  }
   const placements = await getPlacements(scheme.id);
   if (placements.some((p) => p.unitId === unitId)) {
     throw new HttpError('that unit is already in this scheme', 409);
@@ -202,13 +273,13 @@ export async function addUnit(scheme, { unitId, lessonsAllocated, position }) {
   const next = { unitId, lessonsAllocated: lessons, termIndex: 0, weekInTerm: 1 };
   const index = Number.isInteger(position) ? Math.max(0, Math.min(position, placements.length)) : placements.length;
   placements.splice(index, 0, next);
-  await writePlacements(scheme.id, resequence(scheme, placements));
+  await writePlacements(scheme.id, resequence(spine, scheme, placements));
   return getPlacements(scheme.id);
 }
 
 export async function removeUnit(scheme, placementId) {
   const placements = (await getPlacements(scheme.id)).filter((p) => p.id !== placementId);
-  await writePlacements(scheme.id, resequence(scheme, placements));
+  await writePlacements(scheme.id, resequence(spineForScheme(scheme), scheme, placements));
   return getPlacements(scheme.id);
 }
 
@@ -217,7 +288,7 @@ export async function reorderUnits(scheme, orderedPlacementIds) {
   const byId = new Map(placements.map((p) => [p.id, p]));
   const reordered = orderedPlacementIds.map((id) => byId.get(id)).filter(Boolean);
   if (reordered.length !== placements.length) throw new HttpError('the order must list every unit exactly once');
-  await writePlacements(scheme.id, resequence(scheme, reordered));
+  await writePlacements(scheme.id, resequence(spineForScheme(scheme), scheme, reordered));
   return getPlacements(scheme.id);
 }
 
@@ -246,13 +317,14 @@ export async function updatePlacement(scheme, placementId, input) {
     await writePlacements(scheme.id, placements);
     return getPlacements(scheme.id);
   }
-  await writePlacements(scheme.id, resequence(scheme, placements));
+  await writePlacements(scheme.id, resequence(spineForScheme(scheme), scheme, placements));
   return getPlacements(scheme.id);
 }
 
 /** Lay units back-to-back from the start of the year, preserving their order. */
-function resequence(scheme, placements) {
+function resequence(spine, scheme, placements) {
   const plan = autoPlan({
+    spine,
     terms: scheme.terms,
     lessonsPerWeek: scheme.lessonsPerWeek,
     unitIds: placements.map((p) => p.unitId),
@@ -266,13 +338,24 @@ function resequence(scheme, placements) {
 }
 
 export async function applyAutoPlan(scheme, unitIds) {
-  const plan = autoPlan({ terms: scheme.terms, lessonsPerWeek: scheme.lessonsPerWeek, unitIds });
+  const plan = autoPlan({
+    spine: spineForScheme(scheme),
+    terms: scheme.terms,
+    lessonsPerWeek: scheme.lessonsPerWeek,
+    unitIds
+  });
   await writePlacements(scheme.id, plan.placements);
   return { placements: await getPlacements(scheme.id), unplaced: plan.unplaced };
 }
 
-export async function setLessonNote(schemeId, lessonId, { status, notes }) {
-  if (!curriculum.getLesson(lessonId)) throw new HttpError(`unknown lesson ${lessonId}`, 404);
+export async function setLessonNote(scheme, lessonId, { status, notes }) {
+  // The lesson must belong to this scheme's own curriculum, not merely exist
+  // somewhere in the registry.
+  const spine = spineForScheme(scheme);
+  if (!spine.getLesson(lessonId)) {
+    throw new HttpError(`unknown lesson ${lessonId} in ${spine.title}`, 404);
+  }
+  const schemeId = scheme.id;
   const allowed = ['planned', 'ready', 'taught', 'skipped'];
   if (status && !allowed.includes(status)) throw new HttpError(`status must be one of ${allowed.join(', ')}`);
   await query(
@@ -303,11 +386,12 @@ export async function getSchemeDetail(schemeId) {
     getPlacements(schemeId),
     getLessonNotes(schemeId)
   ]);
-  const review = reviewScheme(scheme, placements);
+  const spine = spineForScheme(scheme);
+  const review = reviewScheme(spine, scheme, placements);
   return {
-    scheme,
+    scheme: { ...scheme, spineId: spine.id, spineTitle: spine.title, subjectTitle: spine.subjectTitle },
     placements: placements.map((p) => {
-      const unit = curriculum.getUnit(p.unitId);
+      const unit = spine.getUnit(p.unitId);
       return {
         ...p,
         unit: unit && {
@@ -320,10 +404,10 @@ export async function getSchemeDetail(schemeId) {
         }
       };
     }),
-    timeline: buildTimeline(scheme, placements),
+    timeline: buildTimeline(spine, scheme, placements),
     coverage: review.coverage,
     findings: review.findings,
-    stats: schemeStats(scheme, placements),
+    stats: schemeStats(spine, scheme, placements),
     lessonNotes
   };
 }

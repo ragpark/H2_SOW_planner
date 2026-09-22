@@ -10,9 +10,27 @@ const state = {
   session: null,
   capabilities: { standalone: true, lti: true },
   ltiContext: null,
+  // Every installed curriculum, and the one the library view is showing.
+  catalogue: { spines: [], subjects: [], keyStages: [], default: null },
+  activeSpineId: null,
   library: null,
   schemes: [],
   route: { name: 'dashboard', params: {} }
+};
+
+/** Remember the last curriculum browsed, per viewer. */
+const LAST_SPINE_KEY = 'sow.spine';
+const rememberSpine = (id) => {
+  try {
+    localStorage.setItem(LAST_SPINE_KEY, id);
+  } catch { /* storage may be blocked in an iframe */ }
+};
+const recallSpine = () => {
+  try {
+    return localStorage.getItem(LAST_SPINE_KEY);
+  } catch {
+    return null;
+  }
 };
 
 const root = document.getElementById('app');
@@ -65,14 +83,35 @@ async function boot() {
 }
 
 async function loadShellData() {
-  const [library, schemes, ltiContext] = await Promise.all([
-    api.curriculum(),
+  const [catalogue, schemes, ltiContext] = await Promise.all([
+    api.subjects(),
     api.listSchemes().then((r) => r.schemes),
     api.ltiContext().catch(() => ({ lti: false }))
   ]);
-  state.library = library;
+  state.catalogue = catalogue;
   state.schemes = schemes;
   state.ltiContext = ltiContext?.lti ? ltiContext : null;
+
+  // Choose which curriculum the library shows: the last one browsed, the
+  // deployment default, or simply the only one installed.
+  const ids = catalogue.spines.map((s) => s.id);
+  const remembered = recallSpine();
+  state.activeSpineId =
+    (state.activeSpineId && ids.includes(state.activeSpineId) && state.activeSpineId) ||
+    (remembered && ids.includes(remembered) && remembered) ||
+    catalogue.default ||
+    ids[0] ||
+    null;
+
+  state.library = state.activeSpineId ? await api.curriculum(state.activeSpineId) : null;
+}
+
+export async function setActiveSpine(spineId) {
+  if (!spineId || spineId === state.activeSpineId) return;
+  state.activeSpineId = spineId;
+  rememberSpine(spineId);
+  state.library = await api.curriculum(spineId);
+  render();
 }
 
 async function reload(keepRoute = true) {
@@ -88,7 +127,13 @@ function topbar() {
     el('div', { class: 'brand' },
       el('span', { class: 'brand__mark', 'aria-hidden': 'true', text: 'SW' }),
       el('span', {}, 'SOW Planner ',
-        el('span', { class: 'brand__sub', text: `${state.library?.keyStage || ''} ${state.library?.subject || ''}` })
+        el('span', {
+          class: 'brand__sub',
+          text:
+            state.catalogue.spines.length > 1
+              ? `${state.catalogue.subjects.length} subjects`
+              : state.library?.title || ''
+        })
       )
     ),
     el('div', { class: 'topbar__spacer' }),
@@ -186,17 +231,23 @@ async function render() {
         state.ltiContext.boundSchemeId = state.route.params.id;
       }
     } else if (state.route.name === 'library') {
-      mount(inner, libraryView({ library: state.library }));
+      mount(inner, libraryView({
+        library: state.library,
+        catalogue: state.catalogue,
+        onSpineChange: setActiveSpine
+      }));
     } else if (state.route.name === 'deepLink') {
       mount(inner, deepLinkView({
         schemes: state.schemes,
         library: state.library,
+        catalogue: state.catalogue,
         ltiContext: state.ltiContext
       }));
     } else {
       mount(inner, dashboardView({
         schemes: state.schemes,
         library: state.library,
+        catalogue: state.catalogue,
         canEdit,
         ltiContext: state.ltiContext,
         reload: () => reload()
@@ -250,7 +301,7 @@ function renderSignIn() {
         el('div', {},
           el('h1', { text: 'Plan a scheme of work' }),
           el('p', { class: 'muted', style: { marginTop: '.375rem' },
-            text: 'Key stage 3 chemistry, mapped to the national curriculum. Sign in to start planning, or launch the tool from your learning platform.' })
+            text: 'National curriculum schemes of work. Sign in to start planning, or launch the tool from your learning platform.' })
         ),
         field('Your name', name, 'Used to label the schemes you create'),
         el('button', { class: 'btn btn--primary', type: 'submit' }, 'Start planning')

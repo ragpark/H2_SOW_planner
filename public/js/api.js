@@ -61,7 +61,9 @@ export const api = {
   exchangeHandoff: (handoff) => request('POST', '/session/exchange', { handoff }),
   signOut: () => request('DELETE', '/session'),
 
-  curriculum: () => request('GET', '/curriculum'),
+  subjects: () => request('GET', '/subjects'),
+  curriculum: (spineId) =>
+    request('GET', spineId ? `/curriculum?spine=${encodeURIComponent(spineId)}` : '/curriculum'),
   unit: (id) => request('GET', `/curriculum/units/${encodeURIComponent(id)}`),
   lesson: (id) => request('GET', `/curriculum/lessons/${encodeURIComponent(id)}`),
 

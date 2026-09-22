@@ -1,0 +1,32 @@
+{
+  "id": "fx-second",
+  "title": "Second Fixture Unit",
+  "strapline": "Depends on the first.",
+  "bigIdea": "Prerequisites are spine data, not code.",
+  "suggestedPosition": 2,
+  "suggestedLessons": 1,
+  "ncRefs": ["beta.1"],
+  "wsRefs": [],
+  "priorKnowledge": ["The first fixture unit."],
+  "futureLearning": [],
+  "misconceptions": [],
+  "keyVocabulary": [],
+  "practicals": [],
+  "assessment": { "formative": [], "summative": null },
+  "lessons": [
+    {
+      "id": "fx-second.l1",
+      "title": "Fixture lesson three",
+      "objectives": ["Do the third thing"],
+      "ncRefs": ["beta.1"],
+      "retrieval": [],
+      "sequence": [{ "phase": "Review", "minutes": 15, "detail": "Review it." }],
+      "practical": null,
+      "keyQuestions": [],
+      "support": [],
+      "challenge": [],
+      "homework": "None.",
+      "exitTicket": "Done."
+    }
+  ]
+}

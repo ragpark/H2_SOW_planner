@@ -75,7 +75,7 @@ export function schemeView(ctx) {
         el('h1', { text: scheme.title }),
         el('p', {
           text:
-            `Year ${scheme.yearGroup} ${scheme.subject} · ${scheme.keyStage}` +
+            `Year ${scheme.yearGroup} ${scheme.subjectTitle || scheme.subject} · ${scheme.keyStage}` +
             (scheme.academicYear ? ` · ${scheme.academicYear}` : '') +
             ` · ${scheme.lessonsPerWeek} lessons a week across ${stats.weeks} weeks`
         }),
@@ -114,7 +114,9 @@ function planTab({ detail, canEdit, reload }) {
   if (!detail.placements.length) {
     return el('div', { class: 'empty' },
       el('h3', { text: 'No units placed yet' }),
-      el('p', { text: 'Auto-plan lays the whole key stage 3 chemistry sequence across your year, which you can then adjust.' }),
+      el('p', {
+        text: `Auto-plan lays the whole ${scheme.spineTitle || 'curriculum'} sequence across your year, which you can then adjust.`
+      }),
       canEdit && el('button', {
         class: 'btn btn--primary',
         type: 'button',
@@ -502,7 +504,11 @@ function settingsTab({ detail, canEdit, reload, onDeleted }) {
         el('div', { class: 'form-grid' },
           field('Title', title),
           field('Academic year', academicYear),
-          field('Lessons a week', lessonsPerWeek, 'How many chemistry lessons this class gets each week')
+          field(
+            'Lessons a week',
+            lessonsPerWeek,
+            `How many ${(scheme.subjectTitle || scheme.subject || 'subject').toLowerCase()} lessons this class gets each week`
+          )
         ),
         field('Notes', notes, 'Context for colleagues: setting, prior attainment, department decisions'),
         el('div', {},

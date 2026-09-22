@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { assertProductionConfig, config } from './config.js';
 import { closeDb, migrate, pruneExpired, query, waitForDatabase } from './db/index.js';
 import { importFromSqliteIfNeeded } from './db/import-sqlite.js';
-import { validateCurriculum } from './curriculum/index.js';
+import { registry, validateCurriculum } from './curriculum/index.js';
 import { attachSession } from './middleware/auth.js';
 import { apiRouter } from './routes/api.js';
 import { ltiRouter } from './routes/lti.js';
@@ -51,7 +51,12 @@ export function createApp() {
     } catch {
       return res.status(503).json({ ok: false, error: 'database unavailable' });
     }
-    res.json({ ok: true, subject: 'chemistry', store: 'postgres', lti: config.lti.enabled });
+    res.json({
+      ok: true,
+      store: 'postgres',
+      lti: config.lti.enabled,
+      curricula: registry.summaries().map((s) => s.id)
+    });
   });
 
   app.use(express.static(publicDir, { index: 'index.html', maxAge: config.nodeEnv === 'production' ? '1h' : 0 }));
@@ -114,7 +119,7 @@ if (isEntryPoint) {
   // Bind on all interfaces: a container host routes to the service from outside.
   const server = app.listen(config.port, '0.0.0.0', () => {
     console.log(`SOW Planner listening on port ${config.port} as ${config.toolUrl} (${config.nodeEnv})`);
-    console.log('Store: postgres');
+    console.log(`Store: postgres · curricula: ${registry.summaries().map((s) => s.id).join(', ')}`);
     if (config.lti.enabled) console.log(`LTI tool configuration: ${config.toolUrl}/lti/config.json`);
   });
 

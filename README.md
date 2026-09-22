@@ -1,8 +1,12 @@
 # SOW Planner
 
 A lightweight web app that helps a secondary teacher build and interrogate a
-**scheme of work** for a UK national curriculum subject. It ships with a
-complete **key stage 3 chemistry** content library aimed at Year 9.
+**scheme of work** for a UK national curriculum subject.
+
+The planning engine is **subject-agnostic**: a curriculum is a data package
+identified by *(subject, key stage)*, and the app loads every one it finds. It
+ships with a complete **key stage 3 chemistry** library aimed at Year 9; adding
+physics, or key stage 4 chemistry, means adding a directory, not changing code.
 
 It runs two ways from the same codebase:
 
@@ -63,7 +67,7 @@ docker run -d --name sow-pg -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:
 export DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/postgres
 
 npm start           # http://localhost:3000
-npm test            # 68 tests, against a real PostgreSQL
+npm test            # 83 tests, against a real PostgreSQL
 ```
 
 The schema applies itself on boot, the LTI keypair generates on first use, and
@@ -163,9 +167,9 @@ URL, and warns if the database looks ephemeral. See `.env.example`.
 src/
   server.js              Express app, security headers, static shell
   config.js              Environment configuration and production preflight
-  curriculum/            The content library (JSON) + index, with integrity checks
-    nc-ks3-chemistry.json    49 programme of study statements across 9 strands
-    units/*.json             9 units with full lesson sequences
+  curriculum/            Curriculum spines as data, with a registry and integrity checks
+    common/*.json            Strands shared between subjects (working scientifically)
+    spines/<subject>-<ks>/   One curriculum: manifest.json, spine.json, units/*.json
   services/
     planner.js           Calendar, auto-plan, timeline, coverage, review checks (pure, no I/O)
     schemes.js           Scheme persistence and access rules
@@ -175,7 +179,8 @@ src/
   routes/                REST API and LTI endpoints
   db/                    PostgreSQL schema, pool, and the one-time SQLite import
 public/                  Zero-build SPA: ES modules, no framework, no bundler
-test/                    68 tests over the planner, API, LTI protocol, config and migration
+test/                    83 tests over the planner, API, LTI protocol, config and migration
+  fixtures/spines/       A synthetic curriculum, to prove subject-agnosticism
 Dockerfile               Pinned Node 22, native module built from source
 railway.json             Dockerfile build, /healthz deploy gate, single replica
 ```
@@ -188,9 +193,23 @@ to read a pre-Postgres file during the one-time import.)
 sequencing, coverage and the review checks are functions over plain data. That
 is why swapping the entire storage engine did not touch a line of it.
 
-**Content is data.** Adding a subject means adding a statement file and unit
-files. `validateCurriculum()` runs at boot and fails loudly on a broken
-reference, so a bad content edit cannot silently produce wrong coverage.
+**Content is data.** A curriculum spine is a directory:
+
+```
+src/curriculum/spines/chemistry-ks3/
+  manifest.json     subject, key stage, year groups, source, prerequisites
+  spine.json        the programme of study strands and statements
+  units/*.json      units with full lesson sequences
+```
+
+`validateCurriculum()` runs at boot across every installed spine and fails
+loudly on a broken reference, so a bad content edit cannot silently produce
+wrong coverage. It also enforces that **unit and lesson ids are unique across
+all spines** — schemes store them as bare strings, so global uniqueness means
+adding a subject never requires rewriting stored data.
+
+Set `CURRICULUM_DIR` (colon-separated) to load spines from outside the
+repository, so a school can carry its own without forking.
 
 ### Design
 
@@ -265,7 +284,8 @@ All endpoints take a session as a `sow_session` cookie or an
 | `GET` | `/api/session` | Current session and deployment capabilities |
 | `POST` | `/api/session/local` | Standalone sign-in |
 | `POST` | `/api/session/exchange` | Redeem an LTI handoff token |
-| `GET` | `/api/curriculum` | Strands, statements and unit summaries |
+| `GET` | `/api/subjects` | Installed curricula, subjects and key stages |
+| `GET` | `/api/curriculum` | Strands, statements and unit summaries (`?spine=` or `?subject=&keyStage=`) |
 | `GET` | `/api/curriculum/units/:id` | A full unit |
 | `GET` | `/api/curriculum/lessons/:id` | A full lesson |
 | `GET`/`POST` | `/api/schemes` | List / create |
@@ -278,14 +298,28 @@ All endpoints take a session as a `sow_session` cookie or an
 | `GET` | `/api/schemes/:id/export?format=markdown\|json` | Export |
 | `GET` | `/api/schemes/:id/lessons/:lessonId/plan` | One-page lesson plan |
 
-## Extending to another subject
+## Adding a subject or key stage
 
-1. Add `src/curriculum/nc-ks3-<subject>.json` with the programme of study.
-2. Add unit files under `src/curriculum/units/`.
-3. Declare prerequisites in `src/curriculum/index.js`.
+1. Create `src/curriculum/spines/<subject>-<keystage>/`.
+2. Write `manifest.json` — subject, key stage, year groups, source attribution,
+   any `sharedStrands` to include, and the unit prerequisite map.
+3. Write `spine.json` with the subject's programme of study strands.
+4. Write `units/*.json`, giving every unit and lesson a globally unique id.
 
-The planner, coverage engine, review checks, exporter and UI are
-subject-agnostic — they read whatever the content library declares.
+Nothing else changes. The planner, coverage engine, review checks, exporter and
+UI read whatever the spine declares — `services/planner.js` takes the spine as
+an argument and reads nothing global, which is why the same sequencing and
+coverage logic serves key stage 3 chemistry and key stage 4 physics alike.
+
+With one spine installed the app hides the picker entirely and behaves exactly
+as a single-subject tool. With more than one, the teacher chooses a curriculum
+when creating a scheme; **that choice is then fixed**, because a scheme's units,
+coverage and prerequisites all key off it.
+
+The test suite includes a synthetic `fixtures-ks4` spine under
+`test/fixtures/spines`. Running the planner assertions against both it and
+chemistry is what proves the engine carries no subject assumptions — testing
+chemistry twice would not.
 
 ## Licence and attribution
 

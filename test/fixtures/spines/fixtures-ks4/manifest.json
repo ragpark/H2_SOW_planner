@@ -1,0 +1,13 @@
+{
+  "id": "fixtures-ks4",
+  "subject": "fixtures",
+  "subjectTitle": "Fixtures",
+  "keyStage": "KS4",
+  "keyStageTitle": "Key stage 4",
+  "title": "Key stage 4 Fixtures",
+  "yearGroups": [10, 11],
+  "defaultYearGroup": 10,
+  "source": "Synthetic content used only to prove the planner is subject-agnostic",
+  "sharedStrands": ["working-scientifically"],
+  "prerequisites": { "fx-second": ["fx-first"] }
+}
