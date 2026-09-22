@@ -103,3 +103,27 @@ test('a leftover SESSION_SECRET is reported as unused rather than silently ignor
   const { warnings } = assertProductionConfig(config);
   assert.ok(warnings.some((w) => w.includes('SESSION_SECRET is set but unused')));
 });
+
+test('an unwritable database path produces a diagnosable error, not a raw stack', async () => {
+  const { mkdtempSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+
+  const saved = process.env.DATABASE_FILE;
+  // A directory cannot be opened as a database file.
+  process.env.DATABASE_FILE = mkdtempSync(join(tmpdir(), 'sow-db-'));
+  const { getDb, resetDbForTests } = await import(`../src/db/index.js?case=unwritable`);
+  const { config } = await import(`../src/config.js?case=unwritable`);
+  config.databaseFile = process.env.DATABASE_FILE;
+
+  assert.throws(
+    () => getDb(),
+    (err) => {
+      assert.match(err.message, /Cannot open the database at/);
+      assert.match(err.message, /runs as uid/);
+      assert.match(err.message, /owned by root until the container takes ownership/);
+      return true;
+    }
+  );
+  process.env.DATABASE_FILE = saved;
+});

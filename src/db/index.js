@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3';
-import { mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from '../config.js';
@@ -8,11 +8,42 @@ const here = dirname(fileURLToPath(import.meta.url));
 
 let db = null;
 
+/**
+ * A mounted volume is owned by root until something claims it, so "cannot open
+ * the database" is usually a permission problem rather than a missing file.
+ * The raw SQLite error does not say that, so it is translated here.
+ */
+function describeOpenFailure(file, err) {
+  const uid = typeof process.getuid === 'function' ? process.getuid() : 'unknown';
+  const gid = typeof process.getgid === 'function' ? process.getgid() : 'unknown';
+  return new Error(
+    `Cannot open the database at ${file} (${err.code || err.message}). ` +
+      `This process runs as uid ${uid}, gid ${gid}. ` +
+      'Check that the directory exists and is writable by that user — a mounted volume ' +
+      'is owned by root until the container takes ownership of it.',
+    { cause: err }
+  );
+}
+
 export function getDb() {
   if (db) return db;
   const file = config.databaseFile;
-  if (file !== ':memory:') mkdirSync(dirname(file), { recursive: true });
-  db = new Database(file);
+  try {
+    if (file !== ':memory:') {
+      const dir = dirname(file);
+      // Only create the directory when it is genuinely missing. mkdir on a
+      // directory that already exists fails with EACCES (not EEXIST) when the
+      // process cannot write to its PARENT — which is exactly the case for a
+      // volume mounted at the filesystem root, such as /data.
+      if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    }
+    db = new Database(file);
+  } catch (err) {
+    if (err.code === 'SQLITE_CANTOPEN' || err.code === 'EACCES' || err.code === 'EPERM' || err.code === 'EROFS') {
+      throw describeOpenFailure(file, err);
+    }
+    throw err;
+  }
   db.pragma('foreign_keys = ON');
   db.exec(readFileSync(join(here, 'schema.sql'), 'utf8'));
   return db;

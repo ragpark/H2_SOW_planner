@@ -16,14 +16,21 @@ FROM node:22-slim AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
 
-# Run as the unprivileged user the base image already provides.
+# gosu drops privileges without forking, so the app stays PID 1 and still
+# receives SIGTERM directly when the platform redeploys.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends gosu \
+ && rm -rf /var/lib/apt/lists/* \
+ && gosu nobody true
+
 COPY --from=build --chown=node:node /app/node_modules ./node_modules
 COPY --chown=node:node package.json ./
 COPY --chown=node:node src ./src
 COPY --chown=node:node public ./public
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
-USER node
+# The container starts as root so the entrypoint can take ownership of a
+# mounted volume, then drops to the unprivileged `node` user (uid 1000).
 EXPOSE 3000
-
-# The platform sends SIGTERM on redeploy; the app drains and checkpoints SQLite.
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["node", "src/server.js"]
