@@ -16,23 +16,6 @@
     </div>
   </div>
 </div>
-<script type="module">
-  import { api, tokenStore } from '/js/api.js';
-
-  const status = document.getElementById('status');
-  const params = new URLSearchParams(location.search);
-  const handoff = params.get('handoff');
-
-  // Exchanging a one-time token for a session lets the app work even when the
-  // LMS iframe blocks third-party cookies.
-  try {
-    if (!handoff) throw new Error('This launch link is missing its handoff token.');
-    const result = await api.exchangeHandoff(handoff);
-    tokenStore.set(result.token);
-    location.replace(`/${result.target && result.target.startsWith('/') ? result.target.slice(1) : ''}`);
-  } catch (err) {
-    status.textContent = `${err.message} Open the tool again from your course.`;
-  }
-</script>
+<script type="module" src="/js/launch.js"></script>
 </body>
 </html>

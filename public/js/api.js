@@ -87,7 +87,7 @@ export const api = {
     request('GET', `/schemes/${encodeURIComponent(id)}/lessons/${encodeURIComponent(lessonId)}/plan`),
 
   ltiContext: () => request('GET', '/lti/context'),
-  ltiBind: (schemeId) => request('POST', '/lti/bind', { schemeId }),
+  ltiBind: (schemeId, spineId) => request('POST', '/lti/bind', { schemeId, spineId }),
   deepLink: (items) => request('POST', '/lti/deep-link', { items })
 };
 

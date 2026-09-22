@@ -92,12 +92,16 @@ async function loadShellData() {
   state.schemes = schemes;
   state.ltiContext = ltiContext?.lti ? ltiContext : null;
 
-  // Choose which curriculum the library shows: the last one browsed, the
-  // deployment default, or simply the only one installed.
+  // Choose which curriculum to show. A learning platform that named one
+  // outranks what this browser happened to look at last — except where the
+  // choice was only inferred from a course name, which is a suggestion.
   const ids = catalogue.spines.map((s) => s.id);
+  const fromLti = state.ltiContext?.curriculum?.spineId;
+  const ltiIsAuthoritative = fromLti && state.ltiContext.curriculum.source !== 'default';
   const remembered = recallSpine();
   state.activeSpineId =
     (state.activeSpineId && ids.includes(state.activeSpineId) && state.activeSpineId) ||
+    (ltiIsAuthoritative && ids.includes(fromLti) && fromLti) ||
     (remembered && ids.includes(remembered) && remembered) ||
     catalogue.default ||
     ids[0] ||
@@ -225,9 +229,10 @@ async function render() {
           reload();
         }
       }));
-      // Keep the LMS link pointed at whatever the teacher is working on.
+      // Keep the LMS link pointed at whatever the teacher is working on, and
+      // at the curriculum that scheme is for.
       if (state.ltiContext && !state.ltiContext.boundSchemeId && canEdit) {
-        api.ltiBind(state.route.params.id).catch(() => {});
+        api.ltiBind(state.route.params.id, detail.scheme.spineId).catch(() => {});
         state.ltiContext.boundSchemeId = state.route.params.id;
       }
     } else if (state.route.name === 'library') {

@@ -4,9 +4,16 @@ import { badge, el, field, meter, stat, toast } from '../dom.js';
 export function dashboardView({ schemes, library, catalogue, canEdit, reload, ltiContext }) {
   const spines = catalogue?.spines || [];
   const multi = spines.length > 1;
+  const fromLti = ltiContext?.curriculum || null;
+
   // With one curriculum installed there is nothing to choose, so no picker is
-  // shown; the create form simply uses it.
-  const initialSpine = spines.find((s) => s.id === library?.id) || spines[0] || null;
+  // shown; the create form simply uses it. A learning platform that named one
+  // preselects it.
+  const initialSpine =
+    (fromLti?.spineId && spines.find((s) => s.id === fromLti.spineId)) ||
+    spines.find((s) => s.id === library?.id) ||
+    spines[0] ||
+    null;
 
   const title = el('input', {
     type: 'text',
@@ -67,6 +74,42 @@ export function dashboardView({ schemes, library, catalogue, canEdit, reload, lt
   const autoPlan = el('input', { type: 'checkbox', checked: true });
 
   queueMicrotask(syncContentNotice);
+
+  /**
+   * Say where the curriculum came from. A teacher who did not choose it should
+   * be able to see that their learning platform did, and correct it.
+   */
+  const curriculumProvenance = () => {
+    if (!fromLti) return null;
+    const { source, title, requested, suggestion, inferredFrom, warnings } = fromLti;
+    const notes = [];
+
+    if (warnings?.length) {
+      notes.push(
+        el('div', { class: 'callout' },
+          el('strong', { text: 'Curriculum not available. ' }),
+          warnings.join(' ') + (title ? ` Showing ${title} instead.` : '')
+        )
+      );
+    }
+
+    const explain = {
+      link: title && `This link opens ${title}.`,
+      custom: title && `Your learning platform selected ${title}${requested ? ` (asked for "${requested}")` : ''}.`,
+      context: title && `This course used ${title} last time.`,
+      inferred: title && `Suggested ${title} from the course name${inferredFrom ? ` "${inferredFrom}"` : ''} — change it if that is wrong.`
+    }[source];
+
+    if (explain) {
+      notes.push(
+        el('div', { class: `callout${suggestion ? '' : ' callout--info'}` },
+          el('span', { 'aria-hidden': 'true', text: suggestion ? '? ' : 'i ' }),
+          explain
+        )
+      );
+    }
+    return notes.length ? el('div', { class: 'stack', style: { gap: '.5rem' } }, notes) : null;
+  };
 
   const createCard = el('div', { class: 'card' },
     el('div', { class: 'card__head' }, el('h2', { text: 'Start a new scheme of work' })),
@@ -172,6 +215,7 @@ export function dashboardView({ schemes, library, catalogue, canEdit, reload, lt
         })
       )
     ),
+    curriculumProvenance(),
     el('div', { class: 'stats' },
       multi
         ? stat(spines.length, 'Curricula installed', catalogue.subjects.join(', '))

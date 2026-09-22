@@ -146,3 +146,13 @@ export async function redeemHandoff(handoffToken) {
   return session ? { session, target: row.target } : null;
 }
 
+
+/** The curriculum a course settled on, remembered for its next launch. */
+export async function getContextDefaultSpine(contextId) {
+  const row = await one('SELECT default_spine_id FROM contexts WHERE id = $1', [contextId]);
+  return row?.default_spine_id || null;
+}
+
+export async function setContextDefaultSpine(contextId, spineId) {
+  await query('UPDATE contexts SET default_spine_id = $1 WHERE id = $2', [spineId, contextId]);
+}

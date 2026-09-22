@@ -13,7 +13,16 @@ import {
   summariseLaunch,
   validateLaunch
 } from '../lti/service.js';
-import { createHandoff, createSession, upsertLtiContext, upsertLtiUser } from '../services/identity.js';
+import {
+  createHandoff,
+  createSession,
+  getContextDefaultSpine,
+  setContextDefaultSpine,
+  upsertLtiContext,
+  upsertLtiUser
+} from '../services/identity.js';
+import { selectCurriculum } from '../lti/curriculum-selection.js';
+import { registry } from '../curriculum/index.js';
 import { SESSION_COOKIE, requireSession, sessionCookieOptions } from '../middleware/auth.js';
 import { escapeHtml } from '../util/html.js';
 
@@ -29,12 +38,16 @@ async function findResourceLinkBinding(launch) {
   );
 }
 
-export async function upsertResourceLinkBinding(launch, { schemeId, view = 'scheme' }) {
+export async function upsertResourceLinkBinding(launch, { schemeId, spineId = null, view = 'scheme' }) {
   const row = await one(
-    `INSERT INTO resource_links (id, issuer, client_id, deployment_id, resource_link_id, scheme_id, view)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `INSERT INTO resource_links (id, issuer, client_id, deployment_id, resource_link_id, scheme_id, spine_id, view)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
      ON CONFLICT (issuer, client_id, deployment_id, resource_link_id)
-     DO UPDATE SET scheme_id = EXCLUDED.scheme_id, view = EXCLUDED.view
+     DO UPDATE SET
+       scheme_id = EXCLUDED.scheme_id,
+       -- A link keeps its curriculum unless a new one is given.
+       spine_id = COALESCE(EXCLUDED.spine_id, resource_links.spine_id),
+       view = EXCLUDED.view
      RETURNING id`,
     [
       randomUUID(),
@@ -43,6 +56,7 @@ export async function upsertResourceLinkBinding(launch, { schemeId, view = 'sche
       launch.deploymentId,
       launch.resourceLink.id,
       schemeId,
+      spineId,
       view
     ]
   );
@@ -155,21 +169,43 @@ export function ltiRouter() {
     res.redirect(302, `/launch.html?handoff=${encodeURIComponent(handoff)}`);
   }));
 
-  // What kind of launch is the current session, and what can it do?
+  // What kind of launch is the current session, what can it do, and which
+  // curriculum did it select?
   router.get('/context', requireSession, guard(async (req, res) => {
     const launch = await getLaunchForSession(req.session.id);
     if (!launch) return res.json({ lti: false });
     const binding = await findResourceLinkBinding(launch);
+    const contextDefaultSpineId = req.session.context?.id
+      ? await getContextDefaultSpine(req.session.context.id)
+      : null;
+
+    const selection = selectCurriculum({ launch, binding, contextDefaultSpineId });
+
     res.json({
       lti: true,
       messageType: launch.messageType,
       platformName: launch.platform.name,
       contextTitle: launch.context.title,
+      contextLabel: launch.context.label,
       resourceLinkTitle: launch.resourceLink.title,
       canDeepLink: Boolean(launch.deepLinking?.deep_link_return_url),
       acceptMultiple: launch.deepLinking?.accept_multiple !== false,
       returnUrl: launch.returnUrl,
-      boundSchemeId: binding?.scheme_id || null
+      boundSchemeId: binding?.scheme_id || null,
+      // How the curriculum was chosen, so the interface can say so rather than
+      // silently showing a subject the teacher did not pick.
+      curriculum: {
+        spineId: selection.spine?.id ?? null,
+        title: selection.spine?.title ?? null,
+        subject: selection.spine?.subject ?? null,
+        keyStage: selection.spine?.keyStage ?? null,
+        source: selection.source,
+        requested: selection.requested ?? null,
+        suggestion: Boolean(selection.suggestion),
+        inferredFrom: selection.from ?? null,
+        warnings: selection.warnings,
+        installed: selection.installed
+      }
     });
   }));
 
@@ -178,8 +214,15 @@ export function ltiRouter() {
     const launch = await getLaunchForSession(req.session.id);
     if (!launch) return res.status(400).json({ error: 'this is not an LTI session' });
     if (!req.session.permissions.canEdit) return res.status(403).json({ error: 'read-only launch' });
-    await upsertResourceLinkBinding(launch, { schemeId: req.body?.schemeId || null });
-    res.json({ ok: true });
+
+    const spineId = req.body?.spineId && registry.get(req.body.spineId) ? req.body.spineId : null;
+    await upsertResourceLinkBinding(launch, { schemeId: req.body?.schemeId || null, spineId });
+    // The course remembers the curriculum too, so a launch from a different
+    // link in the same course still lands in the right subject.
+    if (spineId && req.session.context?.id) {
+      await setContextDefaultSpine(req.session.context.id, spineId);
+    }
+    res.json({ ok: true, spineId });
   }));
 
   // Deep Linking: return the chosen resources to the platform as a signed JWT.
@@ -204,7 +247,16 @@ export function ltiRouter() {
         custom: {
           ...(item.schemeId ? { scheme_id: String(item.schemeId) } : {}),
           ...(item.unitId ? { unit_id: String(item.unitId) } : {}),
-          ...(item.lessonId ? { lesson_id: String(item.lessonId) } : {})
+          ...(item.lessonId ? { lesson_id: String(item.lessonId) } : {}),
+          // Carrying the curriculum means the link opens the right subject on
+          // its next launch, without the platform having to be configured.
+          ...(item.spineId && registry.get(item.spineId)
+            ? {
+                spine: item.spineId,
+                subject: registry.get(item.spineId).subject,
+                key_stage: registry.get(item.spineId).keyStage
+              }
+            : {})
         }
       };
     });

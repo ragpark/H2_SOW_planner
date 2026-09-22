@@ -159,3 +159,14 @@ CREATE TABLE IF NOT EXISTS data_migrations (
   applied_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
   detail      TEXT
 );
+
+-- ---------- curriculum selection (LTI) ----------
+-- Added after the initial release, so applied as idempotent alterations.
+
+-- A course remembers which curriculum it is for, so a second launch into the
+-- same course lands on the same subject without being told again.
+ALTER TABLE contexts ADD COLUMN IF NOT EXISTS default_spine_id TEXT;
+
+-- An LMS link records the curriculum it was created for, which outranks
+-- everything else: it is what the link was made to open.
+ALTER TABLE resource_links ADD COLUMN IF NOT EXISTS spine_id TEXT;
