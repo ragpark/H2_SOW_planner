@@ -3,7 +3,8 @@ import cookieParser from 'cookie-parser';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertProductionConfig, config } from './config.js';
-import { closeDb, getDb, pruneExpired } from './db/index.js';
+import { closeDb, migrate, pruneExpired, query, waitForDatabase } from './db/index.js';
+import { importFromSqliteIfNeeded } from './db/import-sqlite.js';
 import { validateCurriculum } from './curriculum/index.js';
 import { attachSession } from './middleware/auth.js';
 import { apiRouter } from './routes/api.js';
@@ -17,7 +18,6 @@ export function createApp() {
   if (contentErrors.length) {
     throw new Error(`curriculum content is invalid:\n  ${contentErrors.join('\n  ')}`);
   }
-  getDb();
 
   const app = express();
   app.disable('x-powered-by');
@@ -43,20 +43,15 @@ export function createApp() {
   app.use('/api', apiRouter());
   app.use('/api/lti', ltiRouter());
 
-  app.get('/healthz', (_req, res) => {
-    // Railway gates a deploy on this, so it must prove the database is usable,
-    // not merely that the process is up.
+  app.get('/healthz', async (_req, res) => {
+    // The platform gates a deploy on this, so it must prove the database is
+    // usable, not merely that the process is up.
     try {
-      getDb().prepare('SELECT 1').get();
-    } catch (err) {
+      await query('SELECT 1');
+    } catch {
       return res.status(503).json({ ok: false, error: 'database unavailable' });
     }
-    res.json({
-      ok: true,
-      subject: 'chemistry',
-      persistent: config.databaseIsPersistent,
-      lti: config.lti.enabled
-    });
+    res.json({ ok: true, subject: 'chemistry', store: 'postgres', lti: config.lti.enabled });
   });
 
   app.use(express.static(publicDir, { index: 'index.html', maxAge: config.nodeEnv === 'production' ? '1h' : 0 }));
@@ -79,6 +74,20 @@ export function createApp() {
   return app;
 }
 
+/** Bring the database up to date before the app serves anything. */
+export async function prepareDatabase() {
+  await waitForDatabase();
+  await migrate();
+  const result = await importFromSqliteIfNeeded();
+  if (result.imported) {
+    const summary = Object.entries(result.imported)
+      .map(([table, n]) => `${table}=${n}`)
+      .join(' ');
+    console.log(`Imported pre-Postgres data from ${result.file}: ${summary}`);
+  }
+  return result;
+}
+
 const isEntryPoint = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;
 if (isEntryPoint) {
   const { problems, warnings } = assertProductionConfig();
@@ -88,33 +97,42 @@ if (isEntryPoint) {
   }
   for (const warning of warnings) console.warn(`WARNING: ${warning}`);
 
+  try {
+    await prepareDatabase();
+  } catch (err) {
+    console.error(`Refusing to start: ${err.message}`);
+    process.exit(1);
+  }
+
   const app = createApp();
-  pruneExpired();
-  const pruneTimer = setInterval(() => pruneExpired(), 10 * 60 * 1000);
+  await pruneExpired().catch((err) => console.error('[db] initial prune failed:', err.message));
+  const pruneTimer = setInterval(() => {
+    pruneExpired().catch((err) => console.error('[db] prune failed:', err.message));
+  }, 10 * 60 * 1000);
   pruneTimer.unref();
 
   // Bind on all interfaces: a container host routes to the service from outside.
   const server = app.listen(config.port, '0.0.0.0', () => {
     console.log(`SOW Planner listening on port ${config.port} as ${config.toolUrl} (${config.nodeEnv})`);
-    console.log(`Database: ${config.databaseFile}${config.databaseIsPersistent ? ' (persistent volume)' : ''}`);
+    console.log('Store: postgres');
     if (config.lti.enabled) console.log(`LTI tool configuration: ${config.toolUrl}/lti/config.json`);
   });
 
   // Containers are replaced on every deploy. Finish in-flight requests and
-  // close SQLite cleanly so the write-ahead log is checkpointed.
+  // close the connection pool cleanly.
   let shuttingDown = false;
   const shutdown = (signal) => {
     if (shuttingDown) return;
     shuttingDown = true;
     console.log(`${signal} received, shutting down`);
     clearInterval(pruneTimer);
-    server.close(() => {
-      closeDb();
+    server.close(async () => {
+      await closeDb();
       process.exit(0);
     });
     // Do not hang a deploy if a connection refuses to drain.
-    setTimeout(() => {
-      closeDb();
+    setTimeout(async () => {
+      await closeDb();
       process.exit(0);
     }, 10_000).unref();
   };

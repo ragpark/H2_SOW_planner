@@ -15,17 +15,15 @@ import { SESSION_COOKIE, requireEditor, requireSession, sessionCookieOptions } f
 export function apiRouter() {
   const router = Router();
 
+  // Express 4 does not catch a rejected promise from a handler, so every async
+  // route is wrapped and its rejection forwarded to the error middleware.
   const wrap = (fn) => (req, res, next) => {
-    try {
-      fn(req, res, next);
-    } catch (err) {
-      next(err);
-    }
+    Promise.resolve(fn(req, res, next)).catch(next);
   };
 
   /** Load a scheme and check access in one step. */
-  const loadScheme = (req, { write = false } = {}) => {
-    const scheme = schemes.getSchemeById(req.params.id);
+  const loadScheme = async (req, { write = false } = {}) => {
+    const scheme = await schemes.getSchemeById(req.params.id);
     const access = schemes.assertAccess(scheme, req.session, { write });
     return { scheme, access };
   };
@@ -43,29 +41,29 @@ export function apiRouter() {
     });
   });
 
-  router.post('/session/local', (req, res) => {
+  router.post('/session/local', wrap(async (req, res) => {
     if (!config.standaloneEnabled) {
       return res.status(403).json({ error: 'standalone sign-in is disabled on this deployment' });
     }
-    const user = createLocalUser({ displayName: req.body?.displayName, email: req.body?.email });
-    const session = createSession({ userId: user.id, source: 'local' });
+    const user = await createLocalUser({ displayName: req.body?.displayName, email: req.body?.email });
+    const session = await createSession({ userId: user.id, source: 'local' });
     res.cookie(SESSION_COOKIE, session.id, sessionCookieOptions());
     res.json({ token: session.id, expiresAt: session.expiresAt });
-  });
+  }));
 
   // Exchanges the one-time token from an LTI launch redirect for a session.
-  router.post('/session/exchange', (req, res) => {
-    const result = redeemHandoff(req.body?.handoff);
+  router.post('/session/exchange', wrap(async (req, res) => {
+    const result = await redeemHandoff(req.body?.handoff);
     if (!result) return res.status(401).json({ error: 'handoff token is invalid or has expired' });
     res.cookie(SESSION_COOKIE, result.session.id, sessionCookieOptions());
     res.json({ token: result.session.id, session: result.session, target: result.target });
-  });
+  }));
 
-  router.delete('/session', (req, res) => {
-    if (req.session) destroySession(req.session.id);
+  router.delete('/session', wrap(async (req, res) => {
+    if (req.session) await destroySession(req.session.id);
     res.clearCookie(SESSION_COOKIE, { ...sessionCookieOptions(), maxAge: undefined });
     res.status(204).end();
-  });
+  }));
 
   // ---------- curriculum library (readable without a scheme) ----------
 
@@ -113,84 +111,84 @@ export function apiRouter() {
 
   // ---------- schemes ----------
 
-  router.get('/schemes', requireSession, wrap((req, res) => {
-    res.json({ schemes: schemes.listSchemes(req.session) });
+  router.get('/schemes', requireSession, wrap(async (req, res) => {
+    res.json({ schemes: await schemes.listSchemes(req.session) });
   }));
 
-  router.post('/schemes', requireEditor, wrap((req, res) => {
-    const scheme = schemes.createScheme(req.session, req.body || {});
-    res.status(201).json(schemes.getSchemeDetail(scheme.id));
+  router.post('/schemes', requireEditor, wrap(async (req, res) => {
+    const scheme = await schemes.createScheme(req.session, req.body || {});
+    res.status(201).json(await schemes.getSchemeDetail(scheme.id));
   }));
 
-  router.get('/schemes/:id', requireSession, wrap((req, res) => {
-    const { access } = loadScheme(req);
-    res.json({ ...schemes.getSchemeDetail(req.params.id), access });
+  router.get('/schemes/:id', requireSession, wrap(async (req, res) => {
+    const { access } = await loadScheme(req);
+    res.json({ ...(await schemes.getSchemeDetail(req.params.id)), access });
   }));
 
-  router.patch('/schemes/:id', requireEditor, wrap((req, res) => {
-    const { scheme } = loadScheme(req, { write: true });
-    schemes.updateScheme(scheme, req.body || {});
-    res.json(schemes.getSchemeDetail(scheme.id));
+  router.patch('/schemes/:id', requireEditor, wrap(async (req, res) => {
+    const { scheme } = await loadScheme(req, { write: true });
+    await schemes.updateScheme(scheme, req.body || {});
+    res.json(await schemes.getSchemeDetail(scheme.id));
   }));
 
-  router.delete('/schemes/:id', requireEditor, wrap((req, res) => {
-    const { scheme } = loadScheme(req, { write: true });
+  router.delete('/schemes/:id', requireEditor, wrap(async (req, res) => {
+    const { scheme } = await loadScheme(req, { write: true });
     if (scheme.ownerId !== req.session.user.id) {
       return res.status(403).json({ error: 'only the owner can delete a scheme' });
     }
-    schemes.deleteScheme(scheme.id);
+    await schemes.deleteScheme(scheme.id);
     res.status(204).end();
   }));
 
-  router.post('/schemes/:id/duplicate', requireEditor, wrap((req, res) => {
-    const { scheme } = loadScheme(req);
-    const copy = schemes.duplicateScheme(scheme, req.session, req.body?.title);
-    res.status(201).json(schemes.getSchemeDetail(copy.id));
+  router.post('/schemes/:id/duplicate', requireEditor, wrap(async (req, res) => {
+    const { scheme } = await loadScheme(req);
+    const copy = await schemes.duplicateScheme(scheme, req.session, req.body?.title);
+    res.status(201).json(await schemes.getSchemeDetail(copy.id));
   }));
 
   // ---------- units within a scheme ----------
 
-  router.post('/schemes/:id/units', requireEditor, wrap((req, res) => {
-    const { scheme } = loadScheme(req, { write: true });
-    schemes.addUnit(scheme, req.body || {});
-    res.json(schemes.getSchemeDetail(scheme.id));
+  router.post('/schemes/:id/units', requireEditor, wrap(async (req, res) => {
+    const { scheme } = await loadScheme(req, { write: true });
+    await schemes.addUnit(scheme, req.body || {});
+    res.json(await schemes.getSchemeDetail(scheme.id));
   }));
 
-  router.patch('/schemes/:id/units/:placementId', requireEditor, wrap((req, res) => {
-    const { scheme } = loadScheme(req, { write: true });
-    schemes.updatePlacement(scheme, req.params.placementId, req.body || {});
-    res.json(schemes.getSchemeDetail(scheme.id));
+  router.patch('/schemes/:id/units/:placementId', requireEditor, wrap(async (req, res) => {
+    const { scheme } = await loadScheme(req, { write: true });
+    await schemes.updatePlacement(scheme, req.params.placementId, req.body || {});
+    res.json(await schemes.getSchemeDetail(scheme.id));
   }));
 
-  router.delete('/schemes/:id/units/:placementId', requireEditor, wrap((req, res) => {
-    const { scheme } = loadScheme(req, { write: true });
-    schemes.removeUnit(scheme, req.params.placementId);
-    res.json(schemes.getSchemeDetail(scheme.id));
+  router.delete('/schemes/:id/units/:placementId', requireEditor, wrap(async (req, res) => {
+    const { scheme } = await loadScheme(req, { write: true });
+    await schemes.removeUnit(scheme, req.params.placementId);
+    res.json(await schemes.getSchemeDetail(scheme.id));
   }));
 
-  router.post('/schemes/:id/reorder', requireEditor, wrap((req, res) => {
-    const { scheme } = loadScheme(req, { write: true });
-    schemes.reorderUnits(scheme, req.body?.order || []);
-    res.json(schemes.getSchemeDetail(scheme.id));
+  router.post('/schemes/:id/reorder', requireEditor, wrap(async (req, res) => {
+    const { scheme } = await loadScheme(req, { write: true });
+    await schemes.reorderUnits(scheme, req.body?.order || []);
+    res.json(await schemes.getSchemeDetail(scheme.id));
   }));
 
-  router.post('/schemes/:id/autoplan', requireEditor, wrap((req, res) => {
-    const { scheme } = loadScheme(req, { write: true });
-    const result = schemes.applyAutoPlan(scheme, req.body?.unitIds || null);
-    res.json({ ...schemes.getSchemeDetail(scheme.id), unplaced: result.unplaced });
+  router.post('/schemes/:id/autoplan', requireEditor, wrap(async (req, res) => {
+    const { scheme } = await loadScheme(req, { write: true });
+    const result = await schemes.applyAutoPlan(scheme, req.body?.unitIds || null);
+    res.json({ ...(await schemes.getSchemeDetail(scheme.id)), unplaced: result.unplaced });
   }));
 
-  router.put('/schemes/:id/lessons/:lessonId', requireEditor, wrap((req, res) => {
-    const { scheme } = loadScheme(req, { write: true });
-    const note = schemes.setLessonNote(scheme.id, req.params.lessonId, req.body || {});
+  router.put('/schemes/:id/lessons/:lessonId', requireEditor, wrap(async (req, res) => {
+    const { scheme } = await loadScheme(req, { write: true });
+    const note = await schemes.setLessonNote(scheme.id, req.params.lessonId, req.body || {});
     res.json({ lessonId: req.params.lessonId, note });
   }));
 
   // ---------- export ----------
 
-  router.get('/schemes/:id/export', requireSession, wrap((req, res) => {
-    const { scheme } = loadScheme(req);
-    const detail = schemes.getSchemeDetail(scheme.id);
+  router.get('/schemes/:id/export', requireSession, wrap(async (req, res) => {
+    const { scheme } = await loadScheme(req);
+    const detail = await schemes.getSchemeDetail(scheme.id);
     const slug = scheme.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'scheme-of-work';
     if (req.query.format === 'json') {
       res.setHeader('Content-Disposition', `attachment; filename="${slug}.json"`);
@@ -201,9 +199,9 @@ export function apiRouter() {
     res.send(schemeToMarkdown(detail));
   }));
 
-  router.get('/schemes/:id/lessons/:lessonId/plan', requireSession, wrap((req, res) => {
-    const { scheme } = loadScheme(req);
-    const notes = schemes.getLessonNotes(scheme.id);
+  router.get('/schemes/:id/lessons/:lessonId/plan', requireSession, wrap(async (req, res) => {
+    const { scheme } = await loadScheme(req);
+    const notes = await schemes.getLessonNotes(scheme.id);
     const markdown = lessonPlanToMarkdown(req.params.lessonId, {
       scheme,
       note: notes[req.params.lessonId] || null

@@ -57,12 +57,20 @@ practicals with hazards and controls, and formative and summative assessment.
 
 ```bash
 npm install
+
+# Any PostgreSQL will do; this starts a throwaway one.
+docker run -d --name sow-pg -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:16
+export DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/postgres
+
 npm start           # http://localhost:3000
-npm test            # 60 tests
+npm test            # 68 tests, against a real PostgreSQL
 ```
 
-Zero configuration in development: SQLite creates itself, the LTI keypair
-generates on first use, and standalone sign-in is enabled.
+The schema applies itself on boot, the LTI keypair generates on first use, and
+standalone sign-in is enabled. Tests run against real PostgreSQL rather than an
+emulation, each test file in its own database, so dialect differences cannot
+hide in the suite and appear only on deploy. Point them elsewhere with
+`TEST_DATABASE_URL`.
 
 ### Deploying to Railway
 
@@ -83,34 +91,47 @@ railway up                       # from the repo root
 railway variables --set "LTI_ADMIN_TOKEN=$(openssl rand -hex 32)"
 ```
 
-#### Attach a volume, or lose everything on the next deploy
+#### Connect the database
 
-A container filesystem is replaced on every deploy. **Without a volume, each
-deploy silently discards every scheme of work *and* every LTI platform
-registration** — teachers lose their planning and the tool stops accepting
-launches until an administrator re-registers each platform.
+Add a Postgres service to the project, then on the app service set:
 
-Attach a Railway volume to the service (any mount path, `/data` is
-conventional). The app reads `RAILWAY_VOLUME_MOUNT_PATH` and puts the database
-inside it automatically. Confirm it worked:
+```
+DATABASE_URL=${{Postgres.DATABASE_URL}}
+```
+
+That reference resolves to the private-network address, so traffic never leaves
+the project and needs no TLS. Confirm it worked:
 
 ```bash
 curl https://<your-domain>/healthz
-# {"ok":true,"subject":"chemistry","persistent":true,"lti":true}
+# {"ok":true,"subject":"chemistry","store":"postgres","lti":true}
 ```
 
-`"persistent": false` means the database is on ephemeral storage. The app also
-prints a warning on boot in that state, and starts anyway so you can still
-evaluate it.
+The health check runs a real query, so a green check means the database is
+genuinely reachable, not just that the process started. The app refuses to
+start in production without `DATABASE_URL`, and waits and retries on boot
+because a database container can accept connections slightly later than the app
+starts.
 
-#### Keep it to one replica
+#### Migrating from the SQLite version
 
-The store is SQLite on a single volume, which one process owns. `railway.json`
-pins `numReplicas` to 1; do not raise it. This is the right trade for a
-department-scale tool — a whole school's schemes of work are a few megabytes —
-but it is the constraint to revisit first if you outgrow it. Moving to Postgres
-means replacing `src/db/index.js` and the queries in `src/services/`; nothing in
-the planner, curriculum or LTI layers depends on SQLite.
+An earlier version stored everything in SQLite on a mounted volume. On boot the
+app imports that file into Postgres **once**, so no schemes of work are lost.
+The import is deliberately conservative: it runs only when the file exists
+*and* the Postgres database has no schemes, it records that it ran in
+`data_migrations`, and it never overwrites. Short-lived rows (sessions,
+handoffs, nonces) are not copied — they expire within hours, and a fresh
+sign-in is better than importing state about to become invalid.
+
+Once the boot log shows the import, the volume is no longer read and can be
+detached. Set `SQLITE_IMPORT=off` to disable the behaviour entirely.
+
+#### Replicas
+
+`railway.json` pins `numReplicas` to 1. Postgres itself is no longer the reason
+— the schema, the LTI key handling and session redemption are all
+concurrency-safe — but nothing has been load-tested above one instance, so
+raise it deliberately rather than by accident.
 
 #### What Railway handles, and what it does not
 
@@ -146,21 +167,26 @@ src/
     nc-ks3-chemistry.json    49 programme of study statements across 9 strands
     units/*.json             9 units with full lesson sequences
   services/
-    planner.js           Calendar, auto-plan, timeline, coverage, review checks
+    planner.js           Calendar, auto-plan, timeline, coverage, review checks (pure, no I/O)
     schemes.js           Scheme persistence and access rules
     identity.js          Users, contexts, sessions, role mapping
     exporter.js          Markdown for a scheme and for a single lesson plan
   lti/                   LTI 1.3: keys, platform registry, launch validation
   routes/                REST API and LTI endpoints
-  db/                    SQLite schema and connection
+  db/                    PostgreSQL schema, pool, and the one-time SQLite import
 public/                  Zero-build SPA: ES modules, no framework, no bundler
-test/                    60 tests over the planner, API, LTI protocol and config
+test/                    68 tests over the planner, API, LTI protocol, config and migration
 Dockerfile               Pinned Node 22, native module built from source
 railway.json             Dockerfile build, /healthz deploy gate, single replica
 ```
 
 **No build step.** The client is plain ES modules served as-is. The whole
-runtime is Express, better-sqlite3, cookie-parser and jose.
+runtime is Express, pg, cookie-parser and jose. (`better-sqlite3` remains only
+to read a pre-Postgres file during the one-time import.)
+
+**The planner is pure.** `services/planner.js` does no I/O — calendars,
+sequencing, coverage and the review checks are functions over plain data. That
+is why swapping the entire storage engine did not touch a line of it.
 
 **Content is data.** Adding a subject means adding a statement file and unit
 files. `validateCurriculum()` runs at boot and fails loudly on a broken

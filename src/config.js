@@ -29,14 +29,40 @@ function derivePublicUrl() {
 const publicUrl = derivePublicUrl();
 
 /**
- * Where the SQLite file lives. A container filesystem is ephemeral, so when the
- * host gives us a mounted volume we put the database inside it by default.
+ * The SQLite file this service used before Postgres. Still resolved so a
+ * deployment that has one on its volume can import it exactly once.
  */
-function deriveDatabaseFile() {
+function deriveLegacySqliteFile() {
+  if (process.env.SQLITE_IMPORT_PATH) return process.env.SQLITE_IMPORT_PATH;
   if (process.env.DATABASE_FILE) return process.env.DATABASE_FILE;
   const volume = process.env.RAILWAY_VOLUME_MOUNT_PATH;
   if (volume) return `${trimSlash(volume)}/sow.db`;
   return 'data/sow.db';
+}
+
+/**
+ * Postgres connects over the platform's private network in production, where
+ * TLS is neither offered nor needed; anywhere else it is required. An explicit
+ * PGSSLMODE always wins.
+ */
+function deriveSsl(databaseUrl) {
+  const mode = process.env.PGSSLMODE;
+  if (mode === 'disable') return false;
+  if (mode === 'require' || mode === 'no-verify') return { rejectUnauthorized: false };
+  if (!databaseUrl) return false;
+  let host = '';
+  try {
+    host = new URL(databaseUrl).hostname;
+  } catch {
+    return false;
+  }
+  const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '::1';
+  const isPrivate = host.endsWith('.railway.internal') || host.endsWith('.internal');
+  if (isLocal || isPrivate) return false;
+  // A managed provider reached over the public internet terminates TLS with a
+  // certificate we have no chain for, so verification is relaxed rather than
+  // TLS being dropped altogether.
+  return { rejectUnauthorized: false };
 }
 
 export const config = {
@@ -45,9 +71,13 @@ export const config = {
   // Public base URL of this tool. LTI redirect URIs are derived from it.
   toolUrl: publicUrl.url,
   toolUrlSource: publicUrl.source,
-  databaseFile: deriveDatabaseFile(),
-  // True when the database is on a mount the host promises to keep.
-  databaseIsPersistent: Boolean(process.env.RAILWAY_VOLUME_MOUNT_PATH || process.env.DATABASE_PERSISTENT),
+  // Postgres is the store. Railway supplies this as a reference variable.
+  databaseUrl: process.env.DATABASE_URL || process.env.POSTGRES_URL || null,
+  databaseSsl: deriveSsl(process.env.DATABASE_URL || process.env.POSTGRES_URL),
+  databasePoolMax: Number(process.env.DATABASE_POOL_MAX || 10),
+  // A pre-Postgres SQLite file to import once, if one is present.
+  legacySqliteFile: deriveLegacySqliteFile(),
+  sqliteImportEnabled: !['0', 'false', 'off', 'no'].includes(String(process.env.SQLITE_IMPORT ?? '').toLowerCase()),
   hostPlatform: process.env.RAILWAY_PROJECT_ID ? 'railway' : null,
   // Recorded so the unused-variable warning does not depend on the environment.
   sessionSecretSet: Boolean(process.env.SESSION_SECRET),
@@ -80,18 +110,13 @@ export function assertProductionConfig(cfg = config) {
   if (cfg.toolUrl.startsWith('http://') && !cfg.toolUrl.startsWith('http://localhost')) {
     problems.push(`TOOL_URL must use https in production (got ${cfg.toolUrl})`);
   }
-
-  // Losing the database loses every scheme of work AND every LTI platform
-  // registration, so an ephemeral container filesystem is a real hazard.
-  if (!cfg.databaseIsPersistent && cfg.databaseFile !== ':memory:') {
-    warnings.push(
-      `The database at ${cfg.databaseFile} is not on a persistent volume. ` +
-        'Schemes of work and LTI platform registrations will be lost on the next deploy or restart. ' +
-        (cfg.hostPlatform === 'railway'
-          ? 'Attach a Railway volume to this service; the database will move into it automatically.'
-          : 'Mount a volume and point DATABASE_FILE at it.')
+  if (!cfg.databaseUrl) {
+    problems.push(
+      'DATABASE_URL must be set. On Railway, add a Postgres service and set ' +
+        'DATABASE_URL=${{Postgres.DATABASE_URL}} on this service.'
     );
   }
+
   if (cfg.sessionSecretSet) {
     warnings.push(
       'SESSION_SECRET is set but unused. Session tokens are random opaque values stored in the ' +

@@ -10,7 +10,7 @@ before(async () => {
   token = await signIn(server.call);
 });
 
-after(() => server.close());
+after(async () => { await server.close(); });
 
 const call = (...args) => server.call(...args);
 

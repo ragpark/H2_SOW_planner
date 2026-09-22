@@ -1,12 +1,10 @@
 import { randomBytes, randomUUID } from 'node:crypto';
-import { getDb } from '../db/index.js';
+import { one, query } from '../db/index.js';
 
 const SESSION_TTL_HOURS = 12;
 const HANDOFF_TTL_SECONDS = 120;
 
 const token = () => randomBytes(32).toString('base64url');
-
-const sqlTime = (date) => date.toISOString().replace('T', ' ').slice(0, 19);
 
 /** LTI role URIs that should be able to edit a scheme of work. */
 const STAFF_ROLE_FRAGMENTS = [
@@ -29,112 +27,122 @@ export function rolesToPermissions(roles = []) {
   };
 }
 
-export function upsertLtiUser({ issuer, sub, name, email }) {
-  const db = getDb();
-  const existing = db.prepare('SELECT * FROM users WHERE lti_issuer = ? AND lti_sub = ?').get(issuer, sub);
+export async function upsertLtiUser({ issuer, sub, name, email }) {
   const displayName = name || email || 'Teacher';
-  if (existing) {
-    db.prepare('UPDATE users SET display_name = ?, email = ? WHERE id = ?').run(displayName, email || null, existing.id);
-    return { ...existing, display_name: displayName, email: email || null };
-  }
-  const id = randomUUID();
-  db.prepare(
-    'INSERT INTO users (id, display_name, email, source, lti_issuer, lti_sub) VALUES (?, ?, ?, ?, ?, ?)'
-  ).run(id, displayName, email || null, 'lti', issuer, sub);
-  return db.prepare('SELECT * FROM users WHERE id = ?').get(id);
-}
-
-export function createLocalUser({ displayName, email }) {
-  const db = getDb();
-  const id = randomUUID();
-  db.prepare('INSERT INTO users (id, display_name, email, source) VALUES (?, ?, ?, ?)').run(
-    id,
-    displayName || 'Teacher',
-    email || null,
-    'local'
+  // The partial unique index on (lti_issuer, lti_sub) makes this atomic, so a
+  // burst of simultaneous launches from one user cannot create duplicates.
+  return one(
+    `INSERT INTO users (id, display_name, email, source, lti_issuer, lti_sub)
+     VALUES ($1, $2, $3, 'lti', $4, $5)
+     ON CONFLICT (lti_issuer, lti_sub) WHERE lti_issuer IS NOT NULL
+     DO UPDATE SET display_name = EXCLUDED.display_name, email = EXCLUDED.email
+     RETURNING *`,
+    [randomUUID(), displayName, email || null, issuer, sub]
   );
-  return db.prepare('SELECT * FROM users WHERE id = ?').get(id);
 }
 
-export function upsertLtiContext({ issuer, contextId, title, label }) {
-  const db = getDb();
+export async function createLocalUser({ displayName, email }) {
+  return one(
+    `INSERT INTO users (id, display_name, email, source)
+     VALUES ($1, $2, $3, 'local') RETURNING *`,
+    [randomUUID(), displayName || 'Teacher', email || null]
+  );
+}
+
+export async function upsertLtiContext({ issuer, contextId, title, label }) {
   if (!contextId) return null;
-  const existing = db
-    .prepare('SELECT * FROM contexts WHERE lti_issuer = ? AND lti_context_id = ?')
-    .get(issuer, contextId);
   const resolvedTitle = title || label || 'Course';
-  if (existing) {
-    db.prepare('UPDATE contexts SET title = ?, label = ? WHERE id = ?').run(resolvedTitle, label || null, existing.id);
-    return { ...existing, title: resolvedTitle, label: label || null };
-  }
-  const id = randomUUID();
-  db.prepare(
-    'INSERT INTO contexts (id, title, label, source, lti_issuer, lti_context_id) VALUES (?, ?, ?, ?, ?, ?)'
-  ).run(id, resolvedTitle, label || null, 'lti', issuer, contextId);
-  return db.prepare('SELECT * FROM contexts WHERE id = ?').get(id);
+  return one(
+    `INSERT INTO contexts (id, title, label, source, lti_issuer, lti_context_id)
+     VALUES ($1, $2, $3, 'lti', $4, $5)
+     ON CONFLICT (lti_issuer, lti_context_id) WHERE lti_issuer IS NOT NULL
+     DO UPDATE SET title = EXCLUDED.title, label = EXCLUDED.label
+     RETURNING *`,
+    [randomUUID(), resolvedTitle, label || null, issuer, contextId]
+  );
 }
 
-export function createSession({ userId, contextId = null, roles = [], source = 'local' }) {
-  const db = getDb();
+export async function createSession({ userId, contextId = null, roles = [], source = 'local' }) {
   const id = token();
-  const expiresAt = sqlTime(new Date(Date.now() + SESSION_TTL_HOURS * 3600 * 1000));
-  db.prepare(
-    'INSERT INTO sessions (id, user_id, context_id, roles, source, expires_at) VALUES (?, ?, ?, ?, ?, ?)'
-  ).run(id, userId, contextId, JSON.stringify(roles), source, expiresAt);
-  return { id, expiresAt };
+  const row = await one(
+    `INSERT INTO sessions (id, user_id, context_id, roles, source, expires_at)
+     VALUES ($1, $2, $3, $4::jsonb, $5, now() + ($6 || ' hours')::interval)
+     RETURNING expires_at`,
+    [id, userId, contextId, JSON.stringify(roles), source, String(SESSION_TTL_HOURS)]
+  );
+  return { id, expiresAt: row.expires_at };
 }
 
-export function getSession(sessionId) {
+export async function getSession(sessionId) {
   if (!sessionId) return null;
-  const db = getDb();
-  const row = db
-    .prepare("SELECT * FROM sessions WHERE id = ? AND expires_at > datetime('now')")
-    .get(sessionId);
+  const row = await one(
+    `SELECT s.id, s.source, s.roles,
+            u.id AS user_id, u.display_name, u.email, u.source AS user_source,
+            c.id AS context_id, c.title AS context_title, c.label AS context_label,
+            c.source AS context_source
+       FROM sessions s
+       JOIN users u ON u.id = s.user_id
+       LEFT JOIN contexts c ON c.id = s.context_id
+      WHERE s.id = $1 AND s.expires_at > now()`,
+    [sessionId]
+  );
   if (!row) return null;
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(row.user_id);
-  if (!user) return null;
-  const context = row.context_id
-    ? db.prepare('SELECT * FROM contexts WHERE id = ?').get(row.context_id)
-    : null;
-  const roles = JSON.parse(row.roles);
+  const roles = row.roles || [];
   return {
     id: row.id,
     source: row.source,
     roles,
-    permissions: row.source === 'lti' ? rolesToPermissions(roles) : { role: 'teacher', canEdit: true, canConfigure: true },
-    user: { id: user.id, displayName: user.display_name, email: user.email, source: user.source },
-    context: context ? { id: context.id, title: context.title, label: context.label, source: context.source } : null
+    permissions:
+      row.source === 'lti'
+        ? rolesToPermissions(roles)
+        : { role: 'teacher', canEdit: true, canConfigure: true },
+    user: {
+      id: row.user_id,
+      displayName: row.display_name,
+      email: row.email,
+      source: row.user_source
+    },
+    context: row.context_id
+      ? {
+          id: row.context_id,
+          title: row.context_title,
+          label: row.context_label,
+          source: row.context_source
+        }
+      : null
   };
 }
 
-export function destroySession(sessionId) {
-  getDb().prepare('DELETE FROM sessions WHERE id = ?').run(sessionId);
+export async function destroySession(sessionId) {
+  await query('DELETE FROM sessions WHERE id = $1', [sessionId]);
 }
 
 /**
  * Mint a single-use token that the browser exchanges for its session. Used to
  * carry an LTI launch into the SPA when third-party cookies are unavailable.
  */
-export function createHandoff(sessionId, target = null) {
-  const db = getDb();
+export async function createHandoff(sessionId, target = null) {
   const t = token();
-  const expiresAt = sqlTime(new Date(Date.now() + HANDOFF_TTL_SECONDS * 1000));
-  db.prepare('INSERT INTO session_handoffs (token, session_id, target, expires_at) VALUES (?, ?, ?, ?)').run(
-    t,
-    sessionId,
-    target,
-    expiresAt
+  await query(
+    `INSERT INTO session_handoffs (token, session_id, target, expires_at)
+     VALUES ($1, $2, $3, now() + ($4 || ' seconds')::interval)`,
+    [t, sessionId, target, String(HANDOFF_TTL_SECONDS)]
   );
   return t;
 }
 
-export function redeemHandoff(handoffToken) {
-  const db = getDb();
-  const row = db
-    .prepare("SELECT * FROM session_handoffs WHERE token = ? AND expires_at > datetime('now')")
-    .get(handoffToken);
+export async function redeemHandoff(handoffToken) {
+  if (!handoffToken) return null;
+  // Deleting and returning in one statement makes redemption atomic: two
+  // simultaneous exchanges cannot both succeed.
+  const row = await one(
+    `DELETE FROM session_handoffs
+      WHERE token = $1 AND expires_at > now()
+      RETURNING session_id, target`,
+    [handoffToken]
+  );
   if (!row) return null;
-  db.prepare('DELETE FROM session_handoffs WHERE token = ?').run(handoffToken);
-  const session = getSession(row.session_id);
+  const session = await getSession(row.session_id);
   return session ? { session, target: row.target } : null;
 }
+

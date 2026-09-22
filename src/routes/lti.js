@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { Router, urlencoded } from 'express';
 import { config } from '../config.js';
-import { getDb } from '../db/index.js';
+import { many, one, query } from '../db/index.js';
 import { getJwks } from '../lti/keys.js';
 import { listPlatforms, registerPlatform } from '../lti/platforms.js';
 import {
@@ -20,36 +20,41 @@ import { escapeHtml } from '../util/html.js';
 const form = urlencoded({ extended: false });
 
 /** Remember which scheme an LMS link points at, so relaunching reopens it. */
-function findResourceLinkBinding(launch) {
+async function findResourceLinkBinding(launch) {
   if (!launch.resourceLink.id) return null;
-  return getDb()
-    .prepare(
-      `SELECT * FROM resource_links
-       WHERE issuer = ? AND client_id = ? AND deployment_id = ? AND resource_link_id = ?`
-    )
-    .get(launch.platform.issuer, launch.platform.clientId, launch.deploymentId, launch.resourceLink.id);
+  return one(
+    `SELECT * FROM resource_links
+      WHERE issuer = $1 AND client_id = $2 AND deployment_id = $3 AND resource_link_id = $4`,
+    [launch.platform.issuer, launch.platform.clientId, launch.deploymentId, launch.resourceLink.id]
+  );
 }
 
-export function upsertResourceLinkBinding(launch, { schemeId, view = 'scheme' }) {
-  const db = getDb();
-  const existing = findResourceLinkBinding(launch);
-  if (existing) {
-    db.prepare('UPDATE resource_links SET scheme_id = ?, view = ? WHERE id = ?').run(schemeId, view, existing.id);
-    return existing.id;
-  }
-  const id = randomUUID();
-  db.prepare(
+export async function upsertResourceLinkBinding(launch, { schemeId, view = 'scheme' }) {
+  const row = await one(
     `INSERT INTO resource_links (id, issuer, client_id, deployment_id, resource_link_id, scheme_id, view)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`
-  ).run(id, launch.platform.issuer, launch.platform.clientId, launch.deploymentId, launch.resourceLink.id, schemeId, view);
-  return id;
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     ON CONFLICT (issuer, client_id, deployment_id, resource_link_id)
+     DO UPDATE SET scheme_id = EXCLUDED.scheme_id, view = EXCLUDED.view
+     RETURNING id`,
+    [
+      randomUUID(),
+      launch.platform.issuer,
+      launch.platform.clientId,
+      launch.deploymentId,
+      launch.resourceLink.id,
+      schemeId,
+      view
+    ]
+  );
+  return row.id;
 }
 
-export function getLaunchForSession(sessionId) {
-  const row = getDb()
-    .prepare('SELECT * FROM lti_launches WHERE session_id = ? ORDER BY created_at DESC LIMIT 1')
-    .get(sessionId);
-  return row ? JSON.parse(row.summary) : null;
+export async function getLaunchForSession(sessionId) {
+  const row = await one(
+    'SELECT summary FROM lti_launches WHERE session_id = $1 ORDER BY created_at DESC LIMIT 1',
+    [sessionId]
+  );
+  return row ? row.summary : null;
 }
 
 export function ltiRouter() {
@@ -101,7 +106,7 @@ export function ltiRouter() {
   // Step 1: third-party initiated login. Platforms use GET or POST.
   router.all('/login', form, guard(async (req, res) => {
     const params = { ...req.query, ...req.body };
-    const { url } = buildLoginRedirect(params);
+    const { url } = await buildLoginRedirect(params);
     res.redirect(302, url);
   }));
 
@@ -110,49 +115,51 @@ export function ltiRouter() {
     const validated = await validateLaunch({ idToken: req.body.id_token, state: req.body.state });
     const launch = summariseLaunch(validated);
 
-    const user = upsertLtiUser({
+    const user = await upsertLtiUser({
       issuer: launch.platform.issuer,
       sub: launch.user.sub,
       name: launch.user.name,
       email: launch.user.email
     });
-    const context = upsertLtiContext({
+    const context = await upsertLtiContext({
       issuer: launch.platform.issuer,
       contextId: launch.context.id,
       title: launch.context.title,
       label: launch.context.label
     });
 
-    const session = createSession({
+    const session = await createSession({
       userId: user.id,
       contextId: context?.id || null,
       roles: launch.roles,
       source: 'lti'
     });
-    getDb()
-      .prepare('INSERT INTO lti_launches (id, session_id, summary) VALUES (?, ?, ?)')
-      .run(randomUUID(), session.id, JSON.stringify(launch));
+    await query('INSERT INTO lti_launches (id, session_id, summary) VALUES ($1, $2, $3::jsonb)', [
+      randomUUID(),
+      session.id,
+      JSON.stringify(launch)
+    ]);
 
     let target = '/';
     if (launch.messageType === MESSAGE_TYPE.deepLinking) {
       target = '/#/deep-link';
     } else {
-      const binding = findResourceLinkBinding(launch);
+      const binding = await findResourceLinkBinding(launch);
       if (binding?.scheme_id) target = `/#/schemes/${binding.scheme_id}`;
     }
 
     // Set the cookie for browsers that allow it, and hand over a one-time
     // token for those that block third-party cookies in the LMS iframe.
     res.cookie(SESSION_COOKIE, session.id, sessionCookieOptions());
-    const handoff = createHandoff(session.id, target);
+    const handoff = await createHandoff(session.id, target);
     res.redirect(302, `/launch.html?handoff=${encodeURIComponent(handoff)}`);
   }));
 
   // What kind of launch is the current session, and what can it do?
-  router.get('/context', requireSession, (req, res) => {
-    const launch = getLaunchForSession(req.session.id);
+  router.get('/context', requireSession, guard(async (req, res) => {
+    const launch = await getLaunchForSession(req.session.id);
     if (!launch) return res.json({ lti: false });
-    const binding = findResourceLinkBinding(launch);
+    const binding = await findResourceLinkBinding(launch);
     res.json({
       lti: true,
       messageType: launch.messageType,
@@ -164,20 +171,20 @@ export function ltiRouter() {
       returnUrl: launch.returnUrl,
       boundSchemeId: binding?.scheme_id || null
     });
-  });
+  }));
 
   // Bind the LMS link the teacher launched from to a scheme.
-  router.post('/bind', requireSession, (req, res) => {
-    const launch = getLaunchForSession(req.session.id);
+  router.post('/bind', requireSession, guard(async (req, res) => {
+    const launch = await getLaunchForSession(req.session.id);
     if (!launch) return res.status(400).json({ error: 'this is not an LTI session' });
     if (!req.session.permissions.canEdit) return res.status(403).json({ error: 'read-only launch' });
-    upsertResourceLinkBinding(launch, { schemeId: req.body?.schemeId || null });
+    await upsertResourceLinkBinding(launch, { schemeId: req.body?.schemeId || null });
     res.json({ ok: true });
-  });
+  }));
 
   // Deep Linking: return the chosen resources to the platform as a signed JWT.
   router.post('/deep-link', requireSession, guard(async (req, res) => {
-    const launch = getLaunchForSession(req.session.id);
+    const launch = await getLaunchForSession(req.session.id);
     if (!launch?.deepLinking?.deep_link_return_url) {
       return res.status(400).json({ error: 'this launch cannot return content to the platform' });
     }
@@ -208,22 +215,22 @@ export function ltiRouter() {
 
   // Platform registration. Protected by a deployment-time shared secret rather
   // than a user session, since it is an administrator task done once per LMS.
-  router.post('/platforms', (req, res) => {
+  router.post('/platforms', guard(async (req, res) => {
     const token = process.env.LTI_ADMIN_TOKEN;
     if (!token) return res.status(403).json({ error: 'LTI_ADMIN_TOKEN is not configured' });
     if (req.get('x-admin-token') !== token) return res.status(401).json({ error: 'invalid admin token' });
     try {
-      res.status(201).json(registerPlatform(req.body || {}));
+      res.status(201).json(await registerPlatform(req.body || {}));
     } catch (err) {
       res.status(err.status || 400).json({ error: err.message });
     }
-  });
+  }));
 
-  router.get('/platforms', (req, res) => {
+  router.get('/platforms', guard(async (req, res) => {
     const token = process.env.LTI_ADMIN_TOKEN;
     if (!token || req.get('x-admin-token') !== token) return res.status(401).json({ error: 'invalid admin token' });
-    res.json({ platforms: listPlatforms() });
-  });
+    res.json({ platforms: await listPlatforms() });
+  }));
 
   // eslint-disable-next-line no-unused-vars
   router.use((err, _req, res, _next) => {

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { SignJWT, createRemoteJWKSet, decodeJwt, jwtVerify } from 'jose';
-import { getDb } from '../db/index.js';
+import { one, query } from '../db/index.js';
 import { config } from '../config.js';
 import { getToolKey } from './keys.js';
 import { findPlatform } from './platforms.js';
@@ -49,19 +49,18 @@ class LtiError extends Error {
  * launching; we hand back an authentication request carrying a state and nonce
  * we will insist on seeing again in the id_token.
  */
-export function buildLoginRedirect(params) {
+export async function buildLoginRedirect(params) {
   const issuer = params.iss;
   if (!issuer) throw new LtiError('iss is required');
-  const platform = findPlatform(issuer, params.client_id);
+  const platform = await findPlatform(issuer, params.client_id);
   if (!platform) throw new LtiError(`no registration for issuer ${issuer}`, 404);
 
   const state = randomUUID();
   const nonce = randomUUID();
-  getDb()
-    .prepare(
-      'INSERT INTO lti_login_state (state, nonce, issuer, client_id, target_link_uri) VALUES (?, ?, ?, ?, ?)'
-    )
-    .run(state, nonce, issuer, platform.clientId, params.target_link_uri || null);
+  await query(
+    'INSERT INTO lti_login_state (state, nonce, issuer, client_id, target_link_uri) VALUES ($1, $2, $3, $4, $5)',
+    [state, nonce, issuer, platform.clientId, params.target_link_uri || null]
+  );
 
   const url = new URL(platform.authLoginUrl);
   const q = url.searchParams;
@@ -87,11 +86,13 @@ export function buildLoginRedirect(params) {
  */
 export async function validateLaunch({ idToken, state }) {
   if (!idToken) throw new LtiError('id_token is required');
-  const db = getDb();
 
-  const stateRow = state ? db.prepare('SELECT * FROM lti_login_state WHERE state = ?').get(state) : null;
+  // Consuming the state in a single statement means a replayed launch cannot
+  // race a legitimate one through the check.
+  const stateRow = state
+    ? await one('DELETE FROM lti_login_state WHERE state = $1 RETURNING *', [state])
+    : null;
   if (!stateRow) throw new LtiError('unknown or expired state — restart the launch', 401);
-  db.prepare('DELETE FROM lti_login_state WHERE state = ?').run(state);
 
   let unverified;
   try {
@@ -102,7 +103,7 @@ export async function validateLaunch({ idToken, state }) {
   if (unverified.iss !== stateRow.issuer) throw new LtiError('id_token issuer does not match the login request', 401);
 
   const audience = Array.isArray(unverified.aud) ? unverified.aud[0] : unverified.aud;
-  const platform = findPlatform(unverified.iss, audience);
+  const platform = await findPlatform(unverified.iss, audience);
   if (!platform) throw new LtiError('id_token is from an unregistered platform', 401);
 
   let payload;
@@ -117,9 +118,13 @@ export async function validateLaunch({ idToken, state }) {
   }
 
   if (payload.nonce !== stateRow.nonce) throw new LtiError('nonce does not match the login request', 401);
-  const replayed = db.prepare('SELECT 1 FROM lti_used_nonces WHERE nonce = ?').get(payload.nonce);
-  if (replayed) throw new LtiError('id_token has already been used', 401);
-  db.prepare('INSERT INTO lti_used_nonces (nonce) VALUES (?)').run(payload.nonce);
+  // Inserting the nonce IS the replay check: a second launch with the same
+  // nonce conflicts and is rejected, with no window between check and write.
+  const claimed = await one(
+    'INSERT INTO lti_used_nonces (nonce) VALUES ($1) ON CONFLICT (nonce) DO NOTHING RETURNING nonce',
+    [payload.nonce]
+  );
+  if (!claimed) throw new LtiError('id_token has already been used', 401);
 
   if (payload[CLAIM.version] !== '1.3.0') throw new LtiError('only LTI 1.3 is supported', 400);
 

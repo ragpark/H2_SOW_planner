@@ -20,11 +20,15 @@ export function sessionCookieOptions() {
  * in an iframe often cannot read its own cookie, so the SPA holds the session
  * token itself and sends it explicitly.
  */
-export function attachSession(req, _res, next) {
+export async function attachSession(req, _res, next) {
   const header = req.get('authorization') || '';
   const bearer = header.startsWith('Bearer ') ? header.slice(7).trim() : null;
-  req.session = getSession(bearer || req.cookies?.[SESSION_COOKIE]) || null;
-  next();
+  try {
+    req.session = (await getSession(bearer || req.cookies?.[SESSION_COOKIE])) || null;
+    next();
+  } catch (err) {
+    next(err);
+  }
 }
 
 export function requireSession(req, res, next) {

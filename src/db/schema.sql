@@ -1,5 +1,4 @@
-PRAGMA journal_mode = WAL;
-PRAGMA foreign_keys = ON;
+-- PostgreSQL schema. Every statement is idempotent so it can run on each boot.
 
 CREATE TABLE IF NOT EXISTS users (
   id            TEXT PRIMARY KEY,
@@ -8,7 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
   source        TEXT NOT NULL CHECK (source IN ('local', 'lti')),
   lti_issuer    TEXT,
   lti_sub       TEXT,
-  created_at    TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE UNIQUE INDEX IF NOT EXISTS users_lti_identity ON users (lti_issuer, lti_sub)
   WHERE lti_issuer IS NOT NULL;
@@ -21,7 +20,7 @@ CREATE TABLE IF NOT EXISTS contexts (
   source          TEXT NOT NULL CHECK (source IN ('local', 'lti')),
   lti_issuer      TEXT,
   lti_context_id  TEXT,
-  created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE UNIQUE INDEX IF NOT EXISTS contexts_lti_identity ON contexts (lti_issuer, lti_context_id)
   WHERE lti_issuer IS NOT NULL;
@@ -36,10 +35,10 @@ CREATE TABLE IF NOT EXISTS schemes (
   year_group       INTEGER NOT NULL DEFAULT 9,
   academic_year    TEXT,
   lessons_per_week INTEGER NOT NULL DEFAULT 2,
-  terms            TEXT NOT NULL,            -- JSON: [{ name, weeks }]
+  terms            JSONB NOT NULL,            -- [{ name, weeks }]
   notes            TEXT,
-  created_at       TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at       TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS schemes_owner ON schemes (owner_id);
 CREATE INDEX IF NOT EXISTS schemes_context ON schemes (context_id);
@@ -65,7 +64,7 @@ CREATE TABLE IF NOT EXISTS lesson_notes (
   status      TEXT NOT NULL DEFAULT 'planned'
                 CHECK (status IN ('planned', 'ready', 'taught', 'skipped')),
   notes       TEXT,
-  updated_at  TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (scheme_id, lesson_id)
 );
 
@@ -79,17 +78,18 @@ CREATE TABLE IF NOT EXISTS lti_platforms (
   auth_login_url  TEXT NOT NULL,
   auth_token_url  TEXT NOT NULL,
   jwks_url        TEXT NOT NULL,
-  deployment_ids  TEXT NOT NULL DEFAULT '[]',   -- JSON array
-  created_at      TEXT NOT NULL DEFAULT (datetime('now')),
+  deployment_ids  JSONB NOT NULL DEFAULT '[]'::jsonb,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (issuer, client_id)
 );
 
--- The tool's own signing keypair, used for client_assertion and Deep Linking responses.
+-- The tool's own signing keypair, used for Deep Linking responses. Holding it
+-- in the shared database keeps it stable across deploys and instances.
 CREATE TABLE IF NOT EXISTS lti_keys (
-  kid          TEXT PRIMARY KEY,
-  public_jwk   TEXT NOT NULL,
+  kid           TEXT PRIMARY KEY,
+  public_jwk    JSONB NOT NULL,
   private_pkcs8 TEXT NOT NULL,
-  created_at   TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- Short-lived OIDC login state, consumed once on launch.
@@ -99,13 +99,13 @@ CREATE TABLE IF NOT EXISTS lti_login_state (
   issuer          TEXT NOT NULL,
   client_id       TEXT,
   target_link_uri TEXT,
-  created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- Nonces already seen, to reject replayed id_tokens.
 CREATE TABLE IF NOT EXISTS lti_used_nonces (
   nonce      TEXT PRIMARY KEY,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- Binds an LMS resource link (a place in a course) to a scheme, so relaunching
@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS resource_links (
   resource_link_id TEXT NOT NULL,
   scheme_id        TEXT REFERENCES schemes (id) ON DELETE SET NULL,
   view             TEXT NOT NULL DEFAULT 'scheme',
-  created_at       TEXT NOT NULL DEFAULT (datetime('now')),
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (issuer, client_id, deployment_id, resource_link_id)
 );
 
@@ -126,10 +126,10 @@ CREATE TABLE IF NOT EXISTS sessions (
   id          TEXT PRIMARY KEY,
   user_id     TEXT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
   context_id  TEXT REFERENCES contexts (id) ON DELETE SET NULL,
-  roles       TEXT NOT NULL DEFAULT '[]',
+  roles       JSONB NOT NULL DEFAULT '[]'::jsonb,
   source      TEXT NOT NULL DEFAULT 'local',
-  created_at  TEXT NOT NULL DEFAULT (datetime('now')),
-  expires_at  TEXT NOT NULL
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  expires_at  TIMESTAMPTZ NOT NULL
 );
 CREATE INDEX IF NOT EXISTS sessions_expiry ON sessions (expires_at);
 
@@ -140,7 +140,7 @@ CREATE TABLE IF NOT EXISTS session_handoffs (
   token      TEXT PRIMARY KEY,
   session_id TEXT NOT NULL REFERENCES sessions (id) ON DELETE CASCADE,
   target     TEXT,
-  expires_at TEXT NOT NULL
+  expires_at TIMESTAMPTZ NOT NULL
 );
 
 -- The validated claims of a launch, kept for the life of the session so the
@@ -148,7 +148,14 @@ CREATE TABLE IF NOT EXISTS session_handoffs (
 CREATE TABLE IF NOT EXISTS lti_launches (
   id         TEXT PRIMARY KEY,
   session_id TEXT NOT NULL REFERENCES sessions (id) ON DELETE CASCADE,
-  summary    TEXT NOT NULL,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  summary    JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS lti_launches_session ON lti_launches (session_id);
+
+-- Records that the one-time import from the pre-Postgres SQLite file has run.
+CREATE TABLE IF NOT EXISTS data_migrations (
+  name        TEXT PRIMARY KEY,
+  applied_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  detail      TEXT
+);
