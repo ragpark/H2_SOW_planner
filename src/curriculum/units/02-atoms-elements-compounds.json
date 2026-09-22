@@ -1,0 +1,164 @@
+{
+  "id": "u-atoms",
+  "title": "Atoms, Elements and Compounds",
+  "strapline": "The language of chemistry: symbols, formulae and what a compound really is.",
+  "bigIdea": "There are about a hundred kinds of atom. Everything else is those atoms joined in different combinations — and chemists write that down in a precise, international shorthand.",
+  "suggestedPosition": 2,
+  "suggestedLessons": 6,
+  "ncRefs": ["aec.1", "aec.2", "aec.3", "aec.4", "pis.2"],
+  "wsRefs": ["ws.5", "ws.9"],
+  "priorKnowledge": [
+    "Year 7: substances are made of particles.",
+    "Unit 1: pure substances and mixtures; conservation of mass observed on the balance."
+  ],
+  "futureLearning": [
+    "GCSE: sub-atomic particles, electronic structure, ionic and covalent bonding, relative formula mass and moles."
+  ],
+  "misconceptions": [
+    { "misconception": "A compound is just a very well-mixed mixture.", "whyItSticks": "Both look uniform, and both involve more than one substance.", "addressIt": "Iron and sulfur demo: separate the mixture with a magnet, then heat to form iron sulfide and show the magnet no longer works. Properties changed, so it is a new substance." },
+    { "misconception": "The symbol 'Co' means carbon and oxygen.", "whyItSticks": "Pupils read symbols as letters rather than as units.", "addressIt": "Drill capital-letter-starts-a-new-element explicitly; contrast CO with Co on the board every time formulae are written." },
+    { "misconception": "Mass is lost when a reaction gives off a gas, or gained when a metal burns.", "whyItSticks": "Pupils trust the balance and do not count invisible gases.", "addressIt": "Repeat the reaction in a sealed flask; explicitly account for every atom before and after." },
+    { "misconception": "Atoms of an element are all slightly different, like grains of sand.", "whyItSticks": "Everyday particles are irregular, so pupils generalise.", "addressIt": "State and enforce that all atoms of an element are the same kind; use identical counters in modelling, never varied ones." }
+  ],
+  "keyVocabulary": [
+    { "term": "atom", "definition": "The smallest particle of an element that can exist." },
+    { "term": "element", "definition": "A substance made of only one type of atom; it cannot be broken down chemically." },
+    { "term": "compound", "definition": "Two or more different elements chemically bonded together in fixed proportions." },
+    { "term": "molecule", "definition": "Two or more atoms chemically bonded together." },
+    { "term": "chemical formula", "definition": "The symbols and numbers showing which atoms, and how many of each, are in a substance." },
+    { "term": "conservation of mass", "definition": "The total mass of the products equals the total mass of the reactants, because atoms are only rearranged." }
+  ],
+  "practicals": [
+    { "id": "p-iron-sulfur", "title": "Iron and sulfur: mixture then compound", "type": "demonstration", "apparatus": ["iron filings", "sulfur powder", "test tube", "magnet", "Bunsen", "tongs"], "hazards": ["Sulfur dioxide produced — irritant", "Very hot tube; exothermic glow"], "control": ["Fume cupboard or very well ventilated room; use minimal quantities", "Teacher demonstration only; heat until the glow starts then remove the flame"], "timing": "15 minutes as a demonstration", "wsFocus": ["ws.5"] },
+    { "id": "p-conservation-mass", "title": "Conservation of mass in a sealed and open vessel", "type": "measurement", "apparatus": ["conical flask with bung", "balance to 0.01 g", "sodium hydrogencarbonate", "dilute hydrochloric acid", "small tube or balloon"], "hazards": ["Dilute hydrochloric acid — irritant", "Pressure build-up in a sealed flask"], "control": ["Goggles; use a balloon rather than a tight bung, or loosen after reading", "Use small quantities (1 g / 10 cm3)"], "timing": "30 minutes", "wsFocus": ["ws.5", "ws.8"] }
+  ],
+  "assessment": {
+    "formative": [
+      "Element-or-compound card sort with formulae, timed.",
+      "Whiteboard drill: how many atoms of each element in Ca(NO3)2?",
+      "Hinge question after Lesson 3 to decide whether to reteach formula reading."
+    ],
+    "summative": { "title": "Atoms, Elements and Compounds quiz", "style": "20 marks, 25 minutes, sat in the last 25 minutes of Lesson 6.", "markSchemeNotes": "No credit for 'it got heavier' without reference to atoms joining with oxygen from the air." }
+  },
+  "lessons": [
+    {
+      "id": "u-atoms.l1",
+      "title": "The atomic model and how it changed",
+      "objectives": ["Describe Dalton's model of the atom", "Explain how scientific models change when new evidence appears"],
+      "ncRefs": ["aec.1"],
+      "wsRefs": ["ws.9"],
+      "retrieval": ["What is in the gaps between particles?", "Define a pure substance."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Five questions recalling Unit 1." },
+        { "phase": "Explanation", "minutes": 18, "detail": "Dalton's four ideas, stated simply; brief timeline from Greek ideas to Dalton, emphasising evidence not opinion." },
+        { "phase": "Independent practice", "minutes": 20, "detail": "Timeline annotation task: for each step, what evidence forced the change?" },
+        { "phase": "Review", "minutes": 14, "detail": "Discussion: 'Was Dalton wrong?' — introduce the idea of a model being useful rather than true." }
+      ],
+      "practical": null,
+      "keyQuestions": ["What makes an idea scientific rather than just an opinion?", "Which parts of Dalton's model do we still use?"],
+      "support": ["Timeline cards pre-cut with dates supplied."],
+      "challenge": ["Research and summarise one piece of evidence that later showed atoms are divisible."],
+      "homework": "Write 100 words: why do scientists change their models?",
+      "exitTicket": "State one thing Dalton got right and one thing later found to be wrong."
+    },
+    {
+      "id": "u-atoms.l2",
+      "title": "Elements, compounds and mixtures",
+      "objectives": ["Classify substances as elements, compounds or mixtures from diagrams and formulae", "Explain why a compound has different properties from its elements"],
+      "ncRefs": ["aec.2"],
+      "retrieval": ["Define an atom", "What is a mixture?"],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 7, "detail": "Particle diagram classification on whiteboards, five diagrams." },
+        { "phase": "Demonstration", "minutes": 15, "detail": "Iron and sulfur: test the mixture with a magnet, heat to form iron sulfide, retest. Record properties in a before/after table." },
+        { "phase": "Explanation", "minutes": 12, "detail": "Define compound formally; contrast with mixture on three criteria: bonding, proportions, separation." },
+        { "phase": "Independent practice", "minutes": 18, "detail": "Card sort with 18 substances, then write three justifications in full sentences." },
+        { "phase": "Review", "minutes": 8, "detail": "Hinge question and reteach if under 80 per cent correct." }
+      ],
+      "practical": "p-iron-sulfur",
+      "keyQuestions": ["Why does the magnet stop working after heating?", "Is air an element, compound or mixture? Justify."],
+      "support": ["Three-column comparison table part-completed."],
+      "challenge": ["Explain why the ratio of iron to sulfur matters in the compound but not in the mixture."],
+      "homework": "Classify 12 everyday substances and justify three of them.",
+      "exitTicket": "Give two differences between a mixture and a compound."
+    },
+    {
+      "id": "u-atoms.l3",
+      "title": "Symbols and formulae",
+      "objectives": ["Recall the symbols for the first 20 elements and common metals", "Read a chemical formula to state the number of atoms of each element"],
+      "ncRefs": ["aec.3"],
+      "retrieval": ["Element, compound or mixture: three quick diagrams", "Why does a compound have new properties?"],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 7, "detail": "Quick-fire symbols known from prior years." },
+        { "phase": "Explanation", "minutes": 15, "detail": "Rules for symbols (one capital, optional lower case); rules for reading subscripts and brackets. Model Ca(NO3)2 fully." },
+        { "phase": "Guided practice", "minutes": 15, "detail": "I do / we do / you do on six formulae of increasing difficulty, including brackets." },
+        { "phase": "Independent practice", "minutes": 15, "detail": "Formula decoding worksheet, 15 items, self-marked from the board." },
+        { "phase": "Review", "minutes": 8, "detail": "Symbol drill — 20 elements against the clock, recorded for a personal best." }
+      ],
+      "practical": null,
+      "keyQuestions": ["What is the difference between CO and Co?", "How many atoms in total are in Ca(NO3)2?"],
+      "support": ["Periodic table with the 20 required symbols highlighted; brackets questions withheld until the basic set is secure."],
+      "challenge": ["Write the formula from a name for six ionic compounds using a supplied ion table."],
+      "homework": "Learn the 20 element symbols; short self-quiz sheet.",
+      "exitTicket": "State the number of each type of atom in Mg(OH)2."
+    },
+    {
+      "id": "u-atoms.l4",
+      "title": "Conservation of mass",
+      "objectives": ["State the law of conservation of mass", "Explain apparent mass changes in open systems", "Use atom counts to justify a balanced equation"],
+      "ncRefs": ["aec.4", "cr.1"],
+      "wsRefs": ["ws.5", "ws.8"],
+      "retrieval": ["Read the formula H2SO4", "Define a compound."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 7, "detail": "Formula reading, four items." },
+        { "phase": "Practical", "minutes": 30, "detail": "Mass before and after reaction, open flask then sealed with a balloon; record to 0.01 g." },
+        { "phase": "Explanation", "minutes": 15, "detail": "Atoms are rearranged, never created or destroyed. Account for the missing mass as escaped carbon dioxide." },
+        { "phase": "Independent practice", "minutes": 10, "detail": "Three scenarios: predict whether recorded mass rises, falls or stays the same, and explain." },
+        { "phase": "Review", "minutes": 3, "detail": "Exit ticket." }
+      ],
+      "practical": "p-conservation-mass",
+      "keyQuestions": ["Where did the missing mass go?", "Why does magnesium appear to gain mass when burned?"],
+      "support": ["Atom-counting counters to model before and after."],
+      "challenge": ["Given masses of two reactants and one product, calculate the mass of the second product."],
+      "homework": "Explain why a burning candle appears to lose mass but the system does not.",
+      "exitTicket": "State the law of conservation of mass in one sentence."
+    },
+    {
+      "id": "u-atoms.l5",
+      "title": "Modelling substances",
+      "objectives": ["Build and interpret molecular models of elements and compounds", "Evaluate the strengths and limitations of a model"],
+      "ncRefs": ["aec.2", "aec.3"],
+      "wsRefs": ["ws.9"],
+      "retrieval": ["State the law of conservation of mass", "How many atoms are in 2H2O?"],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Four questions spanning Lessons 1 to 4." },
+        { "phase": "Modelling activity", "minutes": 30, "detail": "Molecular model kits: build eight named substances from formulae, then a partner names them from the model." },
+        { "phase": "Explanation", "minutes": 12, "detail": "Evaluate the kit as a model: what it shows well (ratio, bonding) and what it misleads on (size, colour, motion, spacing)." },
+        { "phase": "Review", "minutes": 15, "detail": "Written evaluation of the model against two criteria." }
+      ],
+      "practical": null,
+      "keyQuestions": ["What does this model get wrong about a real molecule?", "Why do chemists still use it?"],
+      "support": ["Formula cards with atom counts already tallied."],
+      "challenge": ["Build and compare a giant structure (silicon dioxide) with a simple molecule and describe the difference."],
+      "homework": "Draw and label four of the models built, with formulae.",
+      "exitTicket": "Give one strength and one limitation of a ball-and-stick model."
+    },
+    {
+      "id": "u-atoms.l6",
+      "title": "Review and assessment",
+      "objectives": ["Consolidate unit knowledge", "Demonstrate understanding in an assessment"],
+      "ncRefs": ["aec.1", "aec.2", "aec.3", "aec.4"],
+      "retrieval": ["Full-unit retrieval grid."],
+      "sequence": [
+        { "phase": "Retrieval warm-up", "minutes": 15, "detail": "Knowledge organiser self-quizzing, look-cover-write-check." },
+        { "phase": "Assessment", "minutes": 25, "detail": "20-mark quiz." },
+        { "phase": "Feedback", "minutes": 20, "detail": "Peer mark against a visualised mark scheme; whole-class reteach of the weakest item." }
+      ],
+      "practical": null,
+      "keyQuestions": [],
+      "support": ["Knowledge organiser available during self-quizzing but not during the quiz."],
+      "challenge": ["Write three exam-style questions with mark schemes for a partner."],
+      "homework": "Green-pen corrections for every mark dropped.",
+      "exitTicket": "Which symbol or formula rule will you practise this week?"
+    }
+  ]
+}

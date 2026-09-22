@@ -1,0 +1,232 @@
+import { curriculum } from '../curriculum/index.js';
+
+const bullets = (items, indent = '') =>
+  (items || []).map((i) => `${indent}- ${i}`).join('\n');
+
+/**
+ * A scheme of work as a Markdown document — the format departments actually
+ * paste into their shared drive, print, or hand to a cover teacher.
+ */
+export function schemeToMarkdown(detail) {
+  const { scheme, timeline, coverage, stats, findings } = detail;
+  const out = [];
+
+  out.push(`# ${scheme.title}`);
+  out.push('');
+  out.push(
+    `**Year ${scheme.yearGroup} ${scheme.subject}** · ${scheme.keyStage}` +
+      (scheme.academicYear ? ` · ${scheme.academicYear}` : '') +
+      ` · ${scheme.lessonsPerWeek} lessons per week · ${stats.weeks} teaching weeks`
+  );
+  out.push('');
+  if (scheme.notes) {
+    out.push(`> ${scheme.notes.replace(/\n/g, '\n> ')}`);
+    out.push('');
+  }
+
+  out.push('## At a glance');
+  out.push('');
+  out.push('| | |');
+  out.push('|---|---|');
+  out.push(`| Units | ${stats.unitCount} |`);
+  out.push(`| Lessons planned | ${stats.lessonsAllocated} of ${stats.lessonsAvailable} available |`);
+  out.push(`| Practical activities | ${stats.practicalCount} |`);
+  out.push(`| Curriculum coverage | ${coverage.percent}% of key stage 3 ${curriculum.subject} statements |`);
+  out.push(`| Misconceptions addressed | ${stats.misconceptionCount} |`);
+  out.push('');
+
+  if (findings.length) {
+    out.push('## Planning notes');
+    out.push('');
+    for (const f of findings) {
+      out.push(`- **${f.title}** (${f.severity}) — ${f.detail} _${f.action}_`);
+    }
+    out.push('');
+  }
+
+  out.push('## Long-term plan');
+  out.push('');
+  out.push('| Term | Week | Unit | Lessons |');
+  out.push('|---|---|---|---|');
+  for (const week of timeline.weeks) {
+    if (!week.entries.length) continue;
+    for (const entry of week.entries) {
+      const lessons = entry.lessons.map((l) => l.title).join('; ') || '_consolidation / spare_';
+      out.push(`| ${week.termName} | ${week.weekInTerm} | ${entry.unitTitle} | ${lessons} |`);
+    }
+  }
+  out.push('');
+
+  out.push('## Units');
+  out.push('');
+  for (const placement of detail.placements) {
+    const unit = curriculum.getUnit(placement.unitId);
+    if (!unit) continue;
+    out.push(`### ${placement.customTitle || unit.title}`);
+    out.push('');
+    out.push(`_${unit.strapline}_`);
+    out.push('');
+    out.push(`**Big idea.** ${unit.bigIdea}`);
+    out.push('');
+    out.push(`**Lessons allocated:** ${placement.lessonsAllocated}`);
+    out.push('');
+    if (placement.notes) {
+      out.push(`**Teacher notes.** ${placement.notes}`);
+      out.push('');
+    }
+
+    out.push('**Assumed prior knowledge**');
+    out.push(bullets(unit.priorKnowledge));
+    out.push('');
+
+    out.push('**Common misconceptions**');
+    out.push('');
+    for (const m of unit.misconceptions || []) {
+      out.push(`- **${m.misconception}**`);
+      out.push(`  - Why it sticks: ${m.whyItSticks}`);
+      out.push(`  - How to address it: ${m.addressIt}`);
+    }
+    out.push('');
+
+    out.push('**Key vocabulary**');
+    out.push('');
+    out.push('| Term | Meaning |');
+    out.push('|---|---|');
+    for (const v of unit.keyVocabulary || []) out.push(`| ${v.term} | ${v.definition} |`);
+    out.push('');
+
+    if ((unit.practicals || []).length) {
+      out.push('**Practical work**');
+      out.push('');
+      for (const p of unit.practicals) {
+        out.push(`- **${p.title}** (${p.type}, ${p.timing})`);
+        out.push(`  - Hazards: ${p.hazards.join('; ')}`);
+        out.push(`  - Controls: ${p.control.join('; ')}`);
+      }
+      out.push('');
+      out.push(
+        '> Safety information here is a planning prompt, not a risk assessment. ' +
+          'Check every activity against your employer’s model risk assessments (for example CLEAPSS) before teaching it.'
+      );
+      out.push('');
+    }
+
+    out.push('**Lesson sequence**');
+    out.push('');
+    for (const [i, lesson] of unit.lessons.entries()) {
+      out.push(`${i + 1}. **${lesson.title}**`);
+      for (const o of lesson.objectives) out.push(`   - ${o}`);
+    }
+    out.push('');
+
+    if (unit.assessment?.summative) {
+      out.push(`**Assessment.** ${unit.assessment.summative.title} — ${unit.assessment.summative.style}`);
+      out.push('');
+    }
+  }
+
+  out.push('## Curriculum coverage');
+  out.push('');
+  for (const strand of coverage.strands) {
+    out.push(`### ${strand.title} — ${strand.covered}/${strand.total}`);
+    out.push('');
+    for (const s of strand.statements) {
+      const mark = s.coveredBy.length ? 'x' : ' ';
+      const where = s.coveredBy.length ? ` _(${s.coveredBy.map((c) => c.unitTitle).join(', ')})_` : '';
+      out.push(`- [${mark}] ${s.text}${where}`);
+    }
+    out.push('');
+  }
+
+  out.push('---');
+  out.push('');
+  out.push(`Curriculum statements: ${curriculum.source}.`);
+  out.push(`Generated by SOW Planner on ${new Date().toISOString().slice(0, 10)}.`);
+  return out.join('\n');
+}
+
+/** A single lesson as a one-page plan for teaching from or for cover. */
+export function lessonPlanToMarkdown(lessonId, { scheme = null, note = null } = {}) {
+  const lesson = curriculum.getLesson(lessonId);
+  if (!lesson) return null;
+  const unit = curriculum.getUnit(lesson.unitId);
+  const practical = lesson.practical ? curriculum.getPractical(lesson.practical) : null;
+  const out = [];
+
+  out.push(`# ${lesson.title}`);
+  out.push('');
+  out.push(`${unit.title}${scheme ? ` · ${scheme.title}` : ''} · Year ${scheme?.yearGroup ?? 9}`);
+  out.push('');
+  if (note?.notes) {
+    out.push(`> **This class:** ${note.notes}`);
+    out.push('');
+  }
+
+  out.push('## Learning objectives');
+  out.push(bullets(lesson.objectives));
+  out.push('');
+
+  out.push('## Curriculum links');
+  for (const id of [...(lesson.ncRefs || []), ...(lesson.wsRefs || [])]) {
+    const s = curriculum.getStatement(id);
+    if (s) out.push(`- **${s.strandTitle}:** ${s.text}`);
+  }
+  out.push('');
+
+  out.push('## Retrieval starter');
+  out.push(bullets(lesson.retrieval));
+  out.push('');
+
+  out.push('## Lesson sequence');
+  out.push('');
+  out.push('| Phase | Mins | What happens |');
+  out.push('|---|---|---|');
+  for (const step of lesson.sequence) out.push(`| ${step.phase} | ${step.minutes} | ${step.detail} |`);
+  out.push('');
+
+  if (practical) {
+    out.push(`## Practical: ${practical.title}`);
+    out.push('');
+    out.push(`**Type:** ${practical.type} · **Timing:** ${practical.timing}`);
+    out.push('');
+    out.push('**Apparatus**');
+    out.push(bullets(practical.apparatus));
+    out.push('');
+    out.push('**Hazards**');
+    out.push(bullets(practical.hazards));
+    out.push('');
+    out.push('**Controls**');
+    out.push(bullets(practical.control));
+    out.push('');
+    out.push(
+      '> Not a risk assessment. Check against your employer’s model risk assessments before teaching.'
+    );
+    out.push('');
+  }
+
+  out.push('## Key questions');
+  out.push(bullets(lesson.keyQuestions));
+  out.push('');
+  out.push('## Adaptive teaching');
+  out.push('');
+  out.push('**Support**');
+  out.push(bullets(lesson.support));
+  out.push('');
+  out.push('**Challenge**');
+  out.push(bullets(lesson.challenge));
+  out.push('');
+
+  const relevant = (unit.misconceptions || []).slice(0, 3);
+  if (relevant.length) {
+    out.push('## Watch for');
+    for (const m of relevant) out.push(`- **${m.misconception}** — ${m.addressIt}`);
+    out.push('');
+  }
+
+  out.push(`## Homework`);
+  out.push(lesson.homework || '_None set._');
+  out.push('');
+  out.push('## Exit ticket');
+  out.push(lesson.exitTicket || '_None._');
+  return out.join('\n');
+}

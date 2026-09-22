@@ -1,0 +1,156 @@
+{
+  "id": "u-metals",
+  "title": "Metals, Reactivity and Extraction",
+  "strapline": "One ordered list that explains corrosion, displacement and why we mine what we mine.",
+  "bigIdea": "Metals can be placed in a single order of reactivity. That order explains which metals corrode, which displace others, and which method is needed to get a metal out of its ore.",
+  "suggestedPosition": 6,
+  "suggestedLessons": 6,
+  "ncRefs": ["mat.1", "mat.2", "cr.3", "pt.5"],
+  "wsRefs": ["ws.2", "ws.3", "ws.5", "ws.7"],
+  "priorKnowledge": ["Unit 4: displacement reactions and the deduced metal order.", "Unit 5: acid and metal reactions."],
+  "futureLearning": ["GCSE: electrolysis of molten and aqueous compounds, reduction and oxidation in terms of electrons, life cycle assessment."],
+  "misconceptions": [
+    { "misconception": "Gold and platinum are valuable because they are rare, not because they are unreactive.", "whyItSticks": "Rarity is the everyday explanation for price.", "addressIt": "Connect unreactivity to being found native and to not tarnishing; show that copper is common but still used for its low reactivity in plumbing." },
+    { "misconception": "Rusting is just metal getting dirty or wearing away.", "whyItSticks": "Rust looks like surface grime.", "addressIt": "Run the rusting conditions experiment; show rust is a new substance (iron oxide) with greater mass than the iron consumed." },
+    { "misconception": "All metals rust.", "whyItSticks": "Corrode and rust are used interchangeably.", "addressIt": "Define rusting as specific to iron and steel; use corrosion as the general term and test aluminium and copper for comparison." },
+    { "misconception": "Extraction with carbon works for every metal.", "whyItSticks": "Pupils learn one method and generalise.", "addressIt": "Place carbon in the reactivity series explicitly and reason which metals sit above it and therefore need electrolysis." }
+  ],
+  "keyVocabulary": [
+    { "term": "reactivity series", "definition": "A list of metals in order of how readily they react." },
+    { "term": "ore", "definition": "A rock containing enough of a metal compound to make extraction worthwhile." },
+    { "term": "extraction", "definition": "Obtaining a metal from its compound." },
+    { "term": "reduction", "definition": "A reaction in which a substance loses oxygen." },
+    { "term": "corrosion", "definition": "The reaction of a metal with substances in its surroundings, such as oxygen and water." },
+    { "term": "electrolysis", "definition": "Using electricity to break down a compound into its elements." }
+  ],
+  "practicals": [
+    { "id": "p-rusting", "title": "Conditions needed for rusting", "type": "investigation", "apparatus": ["iron nails", "four test tubes", "boiled distilled water", "anhydrous calcium chloride", "oil layer", "bungs"], "hazards": ["Anhydrous calcium chloride is an irritant", "Glassware"], "control": ["Goggles; teacher boils and cools the water in advance", "Tubes stored in a rack in a safe corner for one week"], "timing": "25 minutes to set up, 10 minutes a week later", "wsFocus": ["ws.3", "ws.5"] },
+    { "id": "p-thermite-or-reduction", "title": "Reduction of copper oxide with carbon", "type": "demonstration", "apparatus": ["copper(II) oxide", "powdered charcoal", "test tube with delivery tube", "limewater", "Bunsen", "clamp"], "hazards": ["Very hot tube; the mixture glows", "Copper oxide is harmful"], "control": ["Teacher demonstration behind a screen; goggles for the front row", "Remove the delivery tube from the limewater before stopping heating"], "timing": "15 minutes", "wsFocus": ["ws.7"] },
+    { "id": "p-metal-water-acid", "title": "Ordering metals by reaction with water and acid", "type": "class", "apparatus": ["magnesium, zinc, iron, copper", "dilute hydrochloric acid", "water", "test tubes and rack", "thermometer"], "hazards": ["Dilute acid — irritant", "Exothermic reaction with magnesium"], "control": ["Goggles; small pieces and test tube quantities only", "No naked flames while hydrogen is being produced"], "timing": "35 minutes", "wsFocus": ["ws.5", "ws.7"] }
+  ],
+  "assessment": {
+    "formative": ["Reactivity series ordering task from experimental evidence, not from memory.", "Predict-the-extraction-method task for five metals.", "Exit-ticket equations for reduction reactions."],
+    "summative": { "title": "Metals and Extraction assessment", "style": "25 marks, 35 minutes, including an investigation-design question on rusting.", "markSchemeNotes": "In the investigation question, credit a named control variable and a stated fair-test reason." }
+  },
+  "lessons": [
+    {
+      "id": "u-metals.l1",
+      "title": "Building the reactivity series",
+      "objectives": ["Order metals by reactivity using experimental evidence", "Write word equations for metal reactions"],
+      "ncRefs": ["mat.1"],
+      "wsRefs": ["ws.5", "ws.7"],
+      "retrieval": ["Acid + metal -> ?", "Which metal displaced copper in Unit 4?"],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Recall of Unit 4 displacement results and Unit 5 acid reactions." },
+        { "phase": "Practical", "minutes": 35, "detail": "Four metals with water and with dilute acid; record observations and any temperature change." },
+        { "phase": "Analysis", "minutes": 12, "detail": "Construct the order from the evidence; compare with the standard series and account for any differences." },
+        { "phase": "Review", "minutes": 5, "detail": "Exit ticket." }
+      ],
+      "practical": "p-metal-water-acid",
+      "keyQuestions": ["Which evidence is strongest for placing iron?", "Why might your order differ from the textbook one?"],
+      "support": ["Observation table with a 0-3 vigour scale."],
+      "challenge": ["Design an additional test to separate two metals that behaved similarly."],
+      "homework": "Learn the reactivity series with a mnemonic; word equations for four reactions.",
+      "exitTicket": "Order magnesium, copper and zinc from most to least reactive."
+    },
+    {
+      "id": "u-metals.l2",
+      "title": "Corrosion and rusting",
+      "objectives": ["State the conditions needed for rusting", "Design a fair test", "Evaluate methods of rust prevention"],
+      "ncRefs": ["mat.1", "cr.3"],
+      "wsRefs": ["ws.3", "ws.5"],
+      "retrieval": ["State the reactivity series top to bottom", "Is rusting a chemical or physical change?"],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Reactivity series recall from memory." },
+        { "phase": "Planning", "minutes": 12, "detail": "Class designs the four-tube experiment; identify independent, dependent and control variables explicitly." },
+        { "phase": "Practical set-up", "minutes": 20, "detail": "Set up the four tubes and label; predictions recorded in writing." },
+        { "phase": "Explanation", "minutes": 15, "detail": "Word equation for rusting; prevention methods (barrier, galvanising, sacrificial protection) with links to reactivity." },
+        { "phase": "Review", "minutes": 5, "detail": "Exit ticket." }
+      ],
+      "practical": "p-rusting",
+      "keyQuestions": ["Why boil the water first?", "Why does zinc plating still protect iron when the plating is scratched?"],
+      "support": ["Variable-identification frame with the independent variable supplied."],
+      "challenge": ["Explain sacrificial protection in terms of the reactivity series."],
+      "homework": "Evaluate three rust prevention methods for a named object, such as a bridge.",
+      "exitTicket": "Name the two substances needed for rusting."
+    },
+    {
+      "id": "u-metals.l3",
+      "title": "Ores and extraction with carbon",
+      "objectives": ["Explain why most metals are found as compounds", "Describe reduction with carbon", "Relate the method of extraction to position in the reactivity series"],
+      "ncRefs": ["mat.2", "cr.3"],
+      "retrieval": ["State the reactivity series", "Define reduction."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Reactivity series and rusting conditions." },
+        { "phase": "Explanation", "minutes": 15, "detail": "Native metals versus ores; place carbon in the series; carbon reduces oxides of metals below it only." },
+        { "phase": "Demonstration", "minutes": 15, "detail": "Copper oxide reduced by carbon; copper colour appears; limewater test confirms carbon dioxide." },
+        { "phase": "Independent practice", "minutes": 17, "detail": "For eight named metals, state the extraction method and justify from position." },
+        { "phase": "Review", "minutes": 5, "detail": "Exit ticket." }
+      ],
+      "practical": "p-thermite-or-reduction",
+      "keyQuestions": ["Why is gold found as the metal itself?", "Why can carbon not be used to extract aluminium?"],
+      "support": ["Reactivity series with carbon marked on it displayed at every bench."],
+      "challenge": ["Write balanced symbol equations for two reduction reactions."],
+      "homework": "Explain why the method of extraction depends on reactivity.",
+      "exitTicket": "Name one metal extracted with carbon and one that cannot be."
+    },
+    {
+      "id": "u-metals.l4",
+      "title": "Electrolysis and the cost of extraction",
+      "objectives": ["Describe electrolysis as a method of extraction", "Explain why electrolysis is expensive", "Evaluate recycling as an alternative"],
+      "ncRefs": ["mat.2"],
+      "wsRefs": ["ws.8"],
+      "retrieval": ["Which metals need electrolysis?", "Define an ore."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Extraction method matching, six metals." },
+        { "phase": "Explanation", "minutes": 15, "detail": "Electrolysis explained at KS3 level: electricity splits the compound. Aluminium as the case study, including the energy cost." },
+        { "phase": "Data task", "minutes": 20, "detail": "Compare energy needed to extract versus recycle aluminium; calculate the percentage saving." },
+        { "phase": "Review", "minutes": 17, "detail": "Structured discussion and written judgement on whether recycling is always better." }
+      ],
+      "practical": null,
+      "keyQuestions": ["Why is aluminium so much more expensive to extract than iron?", "What are the drawbacks of recycling?"],
+      "support": ["Calculation frame with the percentage formula supplied."],
+      "challenge": ["Research and evaluate biological methods of extraction such as phytomining."],
+      "homework": "Six-mark question comparing extraction and recycling of aluminium.",
+      "exitTicket": "Give one reason electrolysis is costly."
+    },
+    {
+      "id": "u-metals.l5",
+      "title": "Rusting results and evaluation",
+      "objectives": ["Interpret the results of the rusting investigation", "Evaluate the method and suggest improvements"],
+      "ncRefs": ["mat.1"],
+      "wsRefs": ["ws.5", "ws.8", "ws.10"],
+      "retrieval": ["Name the two conditions needed for rusting", "What was the control tube for?"],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Recall the predictions made a week earlier." },
+        { "phase": "Observation", "minutes": 12, "detail": "Examine and photograph the four tubes; record observations against predictions." },
+        { "phase": "Analysis and evaluation", "minutes": 25, "detail": "Write a full conclusion with evidence; identify two weaknesses in the method and propose improvements." },
+        { "phase": "Review", "minutes": 15, "detail": "Model a strong evaluation paragraph; pupils improve their own in green pen." }
+      ],
+      "practical": "p-rusting",
+      "keyQuestions": ["Does the evidence prove both conditions are needed, or only that both together cause rust?", "How could the experiment be made more reliable?"],
+      "support": ["Conclusion writing frame with sentence stems."],
+      "challenge": ["Design a follow-up investigation into whether salt water accelerates rusting, with full variable control."],
+      "homework": "Complete the written evaluation.",
+      "exitTicket": "State one improvement you would make to this method."
+    },
+    {
+      "id": "u-metals.l6",
+      "title": "Review and assessment",
+      "objectives": ["Consolidate metal chemistry", "Demonstrate understanding in an assessment"],
+      "ncRefs": ["mat.1", "mat.2"],
+      "retrieval": ["Full-unit retrieval grid."],
+      "sequence": [
+        { "phase": "Retrieval warm-up", "minutes": 12, "detail": "Reactivity series, extraction methods and rusting conditions from memory." },
+        { "phase": "Assessment", "minutes": 35, "detail": "25-mark assessment." },
+        { "phase": "Feedback", "minutes": 13, "detail": "Whole-class feedback on the investigation-design question." }
+      ],
+      "practical": null,
+      "keyQuestions": [],
+      "support": ["Reactivity series provided in the assessment."],
+      "challenge": ["Write a mark scheme for the investigation question and peer-assess."],
+      "homework": "Green-pen corrections.",
+      "exitTicket": "Which part of the reactivity series do you still mix up?"
+    }
+  ]
+}

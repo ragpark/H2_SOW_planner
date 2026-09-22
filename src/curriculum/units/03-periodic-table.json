@@ -1,0 +1,174 @@
+{
+  "id": "u-periodic",
+  "title": "The Periodic Table",
+  "strapline": "Why the table is arranged as it is, and how that arrangement lets you predict.",
+  "bigIdea": "The Periodic Table is not a list — it is a prediction machine. Position tells you about properties, and properties repeat in patterns.",
+  "suggestedPosition": 3,
+  "suggestedLessons": 7,
+  "ncRefs": ["pt.1", "pt.2", "pt.3", "pt.4", "pt.5", "pt.6"],
+  "wsRefs": ["ws.2", "ws.7", "ws.9"],
+  "priorKnowledge": ["Unit 2: elements, symbols, compounds.", "Year 8: properties of metals."],
+  "futureLearning": ["GCSE: electronic structure explains group number and reactivity trends; ionic bonding of Group 1 and 7."],
+  "misconceptions": [
+    { "misconception": "The Periodic Table is ordered by when elements were discovered, or alphabetically.", "whyItSticks": "Pupils see no visible logic in the layout.", "addressIt": "Run the Mendeleev card-sorting activity so pupils rediscover the ordering principle themselves." },
+    { "misconception": "All metals are hard, shiny and magnetic.", "whyItSticks": "Iron is the archetype for 'metal' in everyday life.", "addressIt": "Show sodium (soft, cut with a knife) and mercury footage; test a range of metals for magnetism and find most are not magnetic." },
+    { "misconception": "Group 1 metals get less reactive down the group, like the halogens.", "whyItSticks": "Pupils learn one trend and over-apply it.", "addressIt": "Tabulate the two trends side by side and require the direction to be stated with the group every time." },
+    { "misconception": "The transition metals are a group with shared reactivity like Group 1.", "whyItSticks": "They are a block, so pupils treat them as one group.", "addressIt": "Contrast: Group 1 reactivity trend is predictable; transition metals are characterised by shared property types (coloured compounds, catalysts), not a trend." }
+  ],
+  "keyVocabulary": [
+    { "term": "group", "definition": "A vertical column in the Periodic Table; elements in a group have similar chemical properties." },
+    { "term": "period", "definition": "A horizontal row in the Periodic Table." },
+    { "term": "alkali metal", "definition": "An element in Group 1; reacts with water to form an alkaline solution and hydrogen." },
+    { "term": "halogen", "definition": "An element in Group 7; a reactive non-metal that forms salts with metals." },
+    { "term": "noble gas", "definition": "An element in Group 0; very unreactive." },
+    { "term": "trend", "definition": "A pattern in a property as you move down a group or across a period." }
+  ],
+  "practicals": [
+    { "id": "p-group1", "title": "Group 1 metals with water", "type": "demonstration", "apparatus": ["lithium, sodium and potassium", "large trough or safety screen tank", "universal indicator", "tweezers, knife, tile", "safety screens"], "hazards": ["Alkali metals react violently; hydrogen ignites", "Sodium hydroxide formed is corrosive", "Potassium may spit"], "control": ["Teacher demonstration only, behind safety screens, pupils 2 m back and seated", "Use pieces no larger than a grain of rice", "Keep the stock bottle closed and away from the trough; never use rubidium or caesium in school"], "timing": "20 minutes", "wsFocus": ["ws.2", "ws.7"] },
+    { "id": "p-metal-nonmetal-props", "title": "Testing metals and non-metals", "type": "skills", "apparatus": ["samples of copper, magnesium, iron, carbon, sulfur, iodine (sealed)", "conductivity tester", "hammer or pestle", "universal indicator solution"], "hazards": ["Iodine — harmful, keep sealed", "Sharp fragments when testing malleability"], "control": ["Goggles; iodine viewed in a sealed tube only", "Use a cloth over samples when hammering"], "timing": "40 minutes", "wsFocus": ["ws.5", "ws.6"] },
+    { "id": "p-oxide-ph", "title": "The pH of metal and non-metal oxides", "type": "class", "apparatus": ["magnesium oxide", "calcium oxide", "sulfur (burned in a gas jar) or prepared sulfurous solution", "universal indicator", "test tubes"], "hazards": ["Calcium oxide is corrosive", "Sulfur dioxide is an irritant — prepare in a fume cupboard"], "control": ["Teacher prepares the non-metal oxide solutions in advance in a fume cupboard", "Goggles; small spatula quantities only"], "timing": "30 minutes", "wsFocus": ["ws.7"] }
+  ],
+  "assessment": {
+    "formative": ["Predict-then-check tasks before each Group 1 demonstration.", "Trend sentence drill: 'As you go down Group 1, reactivity ... because ...'", "Blank Periodic Table labelling against the clock."],
+    "summative": { "title": "Periodic Table assessment", "style": "25 marks, 35 minutes, including one prediction question about an unfamiliar element.", "markSchemeNotes": "Credit predictions that are justified by position even where the recalled fact is imperfect." }
+  },
+  "lessons": [
+    {
+      "id": "u-periodic.l1",
+      "title": "Mendeleev's puzzle",
+      "objectives": ["Explain the principles Mendeleev used to arrange the elements", "Explain why leaving gaps was a scientific strength"],
+      "ncRefs": ["pt.2"],
+      "wsRefs": ["ws.9"],
+      "retrieval": ["Recall ten element symbols", "Define an element."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Symbol recall against the clock." },
+        { "phase": "Discovery activity", "minutes": 25, "detail": "Card sort of element property cards with names hidden; pupils devise their own arrangement and justify it." },
+        { "phase": "Explanation", "minutes": 15, "detail": "Reveal Mendeleev's ordering by atomic mass with gaps; his prediction of eka-silicon and its later confirmation." },
+        { "phase": "Review", "minutes": 12, "detail": "Discussion: why was predicting an undiscovered element more impressive than just sorting the known ones?" }
+      ],
+      "practical": null,
+      "keyQuestions": ["What did Mendeleev do that earlier chemists did not?", "Why was leaving a gap braver than filling it?"],
+      "support": ["Cards pre-sorted into two of the required columns."],
+      "challenge": ["Identify the pairs Mendeleev placed out of strict mass order and suggest why."],
+      "homework": "Write a short paragraph on how Mendeleev's prediction was tested.",
+      "exitTicket": "State the property Mendeleev ordered his elements by."
+    },
+    {
+      "id": "u-periodic.l2",
+      "title": "Groups, periods, metals and non-metals",
+      "objectives": ["Locate groups and periods on the Periodic Table", "Describe the position of metals and non-metals"],
+      "ncRefs": ["pt.3"],
+      "retrieval": ["What did Mendeleev order elements by?", "Name three metals."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 7, "detail": "Three questions on Mendeleev plus two symbol recalls." },
+        { "phase": "Explanation", "minutes": 15, "detail": "Structure of the table; the staircase dividing metals from non-metals; Groups 1, 7 and 0 named." },
+        { "phase": "Independent practice", "minutes": 25, "detail": "Colour-code and label a blank Periodic Table; locate ten given elements by group and period." },
+        { "phase": "Review", "minutes": 13, "detail": "Rapid location quiz: 'Which element is in Group 2, Period 3?'" }
+      ],
+      "practical": null,
+      "keyQuestions": ["Are there more metals or non-metals?", "Where would you look for an unreactive gas?"],
+      "support": ["Table with the staircase already drawn."],
+      "challenge": ["Research why hydrogen is placed awkwardly and argue where it should go."],
+      "homework": "Complete and learn the labelled Periodic Table.",
+      "exitTicket": "Name the element in Group 1, Period 2."
+    },
+    {
+      "id": "u-periodic.l3",
+      "title": "Properties of metals and non-metals",
+      "objectives": ["Compare the physical properties of metals and non-metals", "Use evidence to classify an unknown element"],
+      "ncRefs": ["pt.1", "pt.5"],
+      "wsRefs": ["ws.5", "ws.6"],
+      "retrieval": ["Where are non-metals found on the table?", "Define a period."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 7, "detail": "Location quiz on the table." },
+        { "phase": "Practical", "minutes": 40, "detail": "Test six samples for appearance, conductivity, malleability and state; record in a results table designed by pupils." },
+        { "phase": "Analysis", "minutes": 10, "detail": "Identify the pattern; classify a seventh 'unknown' sample from its results." },
+        { "phase": "Review", "minutes": 3, "detail": "Exit ticket." }
+      ],
+      "practical": "p-metal-nonmetal-props",
+      "keyQuestions": ["Which property is the most reliable test for a metal?", "Which sample did not fit the pattern, and why might that be?"],
+      "support": ["Results table provided with headings."],
+      "challenge": ["Research a metalloid and explain why it resists classification."],
+      "homework": "Comparison table of five properties for metals and non-metals.",
+      "exitTicket": "Give two properties that distinguish a metal from a non-metal."
+    },
+    {
+      "id": "u-periodic.l4",
+      "title": "Group 1: the alkali metals",
+      "objectives": ["Describe the reactions of Group 1 metals with water", "Describe and explain the trend in reactivity down Group 1", "Predict the behaviour of an unobserved member of the group"],
+      "ncRefs": ["pt.4"],
+      "wsRefs": ["ws.2", "ws.7"],
+      "retrieval": ["Name two properties of metals", "Where is Group 1?"],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 7, "detail": "Four questions on metals and table structure." },
+        { "phase": "Predict", "minutes": 8, "detail": "Pupils predict and commit in writing before seeing anything: which of Li, Na, K reacts most vigorously?" },
+        { "phase": "Demonstration", "minutes": 20, "detail": "Lithium, sodium and potassium with water behind screens; universal indicator added; observations recorded in a common table." },
+        { "phase": "Explanation", "minutes": 12, "detail": "Word equations for all three; the trend stated formally; introduce the alkaline product." },
+        { "phase": "Review", "minutes": 13, "detail": "Predict the behaviour of rubidium, with justification from the trend." }
+      ],
+      "practical": "p-group1",
+      "keyQuestions": ["What gas is produced, and how would you test for it?", "Why is the solution alkaline afterwards?", "Why is caesium never demonstrated in schools?"],
+      "support": ["Observation table with prompts for fizzing, movement, flame and indicator colour."],
+      "challenge": ["Write balanced symbol equations for all three reactions."],
+      "homework": "Write word equations for lithium, sodium and potassium with water and with oxygen.",
+      "exitTicket": "Complete: 'As you go down Group 1, reactivity ...'"
+    },
+    {
+      "id": "u-periodic.l5",
+      "title": "Group 7 and Group 0",
+      "objectives": ["Describe the trend in reactivity down Group 7", "Explain why Group 0 elements are unreactive and where they are used"],
+      "ncRefs": ["pt.1", "pt.4"],
+      "retrieval": ["State the Group 1 trend", "Name the gas produced when sodium reacts with water."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Group 1 trend and equations recalled in writing." },
+        { "phase": "Explanation", "minutes": 15, "detail": "Halogen appearance and state down the group; the reactivity trend, deliberately contrasted with Group 1. Noble gases and their uses." },
+        { "phase": "Independent practice", "minutes": 20, "detail": "Data table of halogen properties: describe two trends and use them to predict astatine's appearance and state." },
+        { "phase": "Review", "minutes": 17, "detail": "Compare-and-contrast grid: Group 1 vs Group 7 vs Group 0 on reactivity, state and type of element." }
+      ],
+      "practical": null,
+      "keyQuestions": ["Why do Group 1 and Group 7 trends run in opposite directions?", "Why is helium used in balloons rather than hydrogen?"],
+      "support": ["Trend sentence stems supplied for both groups."],
+      "challenge": ["Predict the products of a displacement reaction between chlorine and potassium bromide and justify."],
+      "homework": "Summary table of the three groups covered.",
+      "exitTicket": "Which is more reactive, fluorine or iodine? Explain using the trend."
+    },
+    {
+      "id": "u-periodic.l6",
+      "title": "Metal and non-metal oxides",
+      "objectives": ["Describe the acidity of metal and non-metal oxides", "Relate oxide behaviour to position in the Periodic Table"],
+      "ncRefs": ["pt.6"],
+      "wsRefs": ["ws.7"],
+      "retrieval": ["Group 7 trend", "What is an oxide?"],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Five questions spanning Lessons 2 to 5." },
+        { "phase": "Practical", "minutes": 30, "detail": "Add universal indicator to solutions of metal oxides and prepared non-metal oxide solutions; record pH." },
+        { "phase": "Explanation", "minutes": 12, "detail": "Metal oxides tend to be basic or alkaline; non-metal oxides tend to be acidic. Link to acid rain as a real-world consequence." },
+        { "phase": "Review", "minutes": 10, "detail": "Predict the pH of the oxide of an unseen element given only its position." }
+      ],
+      "practical": "p-oxide-ph",
+      "keyQuestions": ["Predict the pH of sodium oxide solution; justify from position.", "Why does burning fossil fuel containing sulfur cause acid rain?"],
+      "support": ["pH colour chart at each bench; results table supplied."],
+      "challenge": ["Research amphoteric oxides and explain why aluminium oxide breaks the rule."],
+      "homework": "Explain how the Periodic Table lets you predict whether an oxide will be acidic.",
+      "exitTicket": "Metal oxides are usually ... and non-metal oxides are usually ..."
+    },
+    {
+      "id": "u-periodic.l7",
+      "title": "Review and assessment",
+      "objectives": ["Consolidate knowledge of the Periodic Table", "Apply trends to predict properties of unfamiliar elements"],
+      "ncRefs": ["pt.1", "pt.2", "pt.3", "pt.4", "pt.5", "pt.6"],
+      "retrieval": ["Full-unit retrieval grid, 20 items."],
+      "sequence": [
+        { "phase": "Retrieval warm-up", "minutes": 15, "detail": "Blank Periodic Table labelling plus trend sentences from memory." },
+        { "phase": "Assessment", "minutes": 35, "detail": "25-mark assessment." },
+        { "phase": "Feedback", "minutes": 10, "detail": "Immediate whole-class feedback on the prediction question." }
+      ],
+      "practical": null,
+      "keyQuestions": [],
+      "support": ["Periodic table permitted for all pupils in the assessment."],
+      "challenge": ["Design a Periodic Table for a fictional set of elements from property data."],
+      "homework": "Green-pen corrections.",
+      "exitTicket": "Which trend do you still need to practise?"
+    }
+  ]
+}

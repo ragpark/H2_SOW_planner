@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Opening the planner…</title>
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div class="signin">
+  <div class="card signin__card">
+    <div class="card__body">
+      <h1>Opening the planner</h1>
+      <p class="muted" id="status">Completing your launch…</p>
+    </div>
+  </div>
+</div>
+<script type="module">
+  import { api, tokenStore } from '/js/api.js';
+
+  const status = document.getElementById('status');
+  const params = new URLSearchParams(location.search);
+  const handoff = params.get('handoff');
+
+  // Exchanging a one-time token for a session lets the app work even when the
+  // LMS iframe blocks third-party cookies.
+  try {
+    if (!handoff) throw new Error('This launch link is missing its handoff token.');
+    const result = await api.exchangeHandoff(handoff);
+    tokenStore.set(result.token);
+    location.replace(`/${result.target && result.target.startsWith('/') ? result.target.slice(1) : ''}`);
+  } catch (err) {
+    status.textContent = `${err.message} Open the tool again from your course.`;
+  }
+</script>
+</body>
+</html>

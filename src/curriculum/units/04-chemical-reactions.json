@@ -1,0 +1,177 @@
+{
+  "id": "u-reactions",
+  "title": "Chemical Reactions and Equations",
+  "strapline": "Recognising a chemical change, naming its type, and writing it down.",
+  "bigIdea": "A chemical reaction rearranges atoms into new substances. Every reaction can be classified, and every reaction can be written as an equation that accounts for every atom.",
+  "suggestedPosition": 4,
+  "suggestedLessons": 7,
+  "ncRefs": ["cr.1", "cr.2", "cr.3", "aec.4", "en.2"],
+  "wsRefs": ["ws.1", "ws.5", "ws.7"],
+  "priorKnowledge": ["Unit 2: formulae, conservation of mass.", "Unit 3: metals and non-metals, reactivity trends."],
+  "futureLearning": ["GCSE: balanced symbol equations with state symbols, ionic equations, reacting-mass calculations."],
+  "misconceptions": [
+    { "misconception": "Any change that looks dramatic (bubbling, colour change) is a chemical reaction.", "whyItSticks": "Dissolving fizzy tablets and boiling both bubble.", "addressIt": "Give a sorting task with deliberately tempting physical changes; require pupils to name the new substance formed as the test." },
+    { "misconception": "Balancing an equation means changing the little numbers in the formula.", "whyItSticks": "Changing subscripts makes the numbers work, so it appears to succeed.", "addressIt": "State and enforce: formulae are facts, coefficients are choices. Use models so changing H2O to H2O2 visibly makes a different substance." },
+    { "misconception": "Burning destroys matter.", "whyItSticks": "Ash weighs far less than the log.", "addressIt": "Burn magnesium in a crucible and weigh; mass increases. Account for oxygen from the air." },
+    { "misconception": "Thermal decomposition and combustion are the same because both involve heating.", "whyItSticks": "The Bunsen is present in both.", "addressIt": "Contrast directly: combustion needs oxygen and releases energy; decomposition needs energy put in and uses no oxygen." }
+  ],
+  "keyVocabulary": [
+    { "term": "reactant / product", "definition": "The substances you start with / the new substances formed." },
+    { "term": "combustion", "definition": "A reaction with oxygen that releases energy." },
+    { "term": "thermal decomposition", "definition": "The breakdown of a compound into simpler substances using heat." },
+    { "term": "oxidation", "definition": "A reaction in which a substance gains oxygen." },
+    { "term": "displacement", "definition": "A reaction in which a more reactive element takes the place of a less reactive one in a compound." },
+    { "term": "word equation", "definition": "Reactants on the left, an arrow, products on the right, written in words." },
+    { "term": "balanced equation", "definition": "A symbol equation with equal numbers of each type of atom on both sides." }
+  ],
+  "practicals": [
+    { "id": "p-burning-magnesium", "title": "Burning magnesium and measuring mass change", "type": "class", "apparatus": ["magnesium ribbon", "crucible and lid", "pipeclay triangle, tripod, Bunsen", "balance to 0.01 g", "tongs"], "hazards": ["Intense UV light from burning magnesium", "Very hot crucible"], "control": ["Never look directly at the flame; lift the lid only briefly", "Allow the crucible to cool on a heatproof mat before weighing; use tongs throughout"], "timing": "40 minutes", "wsFocus": ["ws.5", "ws.6"] },
+    { "id": "p-thermal-decomp", "title": "Thermal decomposition of copper carbonate", "type": "demonstration", "apparatus": ["copper(II) carbonate", "boiling tube with delivery tube", "limewater", "Bunsen", "clamp stand"], "hazards": ["Copper carbonate is harmful if swallowed", "Suck-back of limewater into the hot tube"], "control": ["Remove the delivery tube from the limewater before stopping heating", "Goggles; small spatula quantity only"], "timing": "15 minutes", "wsFocus": ["ws.7"] },
+    { "id": "p-displacement", "title": "Displacement reactions of metals and metal salts", "type": "class", "apparatus": ["spotting tile or 24-well plate", "copper sulfate, magnesium sulfate, zinc sulfate, iron sulfate solutions", "small pieces of Mg, Zn, Fe, Cu"], "hazards": ["Copper sulfate solution is harmful and an irritant"], "control": ["Goggles; wash hands after handling; use a well plate to limit quantities"], "timing": "35 minutes", "wsFocus": ["ws.5", "ws.7"] }
+  ],
+  "assessment": {
+    "formative": ["Physical-or-chemical sorting task with justification.", "Balancing equation ladders with immediate self-marking.", "Whiteboard drill: name the reaction type from a description."],
+    "summative": { "title": "Chemical Reactions assessment", "style": "30 marks, 45 minutes, including four equations to balance and a displacement results grid to interpret.", "markSchemeNotes": "Do not credit balanced equations achieved by altering subscripts, even where atom counts match." }
+  },
+  "lessons": [
+    {
+      "id": "u-reactions.l1",
+      "title": "Physical or chemical change?",
+      "objectives": ["Distinguish physical from chemical changes", "Justify a classification using evidence of a new substance"],
+      "ncRefs": ["cr.1"],
+      "retrieval": ["State the law of conservation of mass", "Name a physical separation technique."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Five questions drawing on Units 1 and 2." },
+        { "phase": "Circus of changes", "minutes": 25, "detail": "Six short stations: ice melting, iron rusting, sugar dissolving, magnesium in acid, wax melting, copper sulfate hydration. Pupils classify and state the evidence." },
+        { "phase": "Explanation", "minutes": 12, "detail": "Formalise the test: has a new substance formed and is the change easily reversed?" },
+        { "phase": "Review", "minutes": 15, "detail": "Discuss the deliberately tricky cases; correct the common errors as a class." }
+      ],
+      "practical": null,
+      "keyQuestions": ["Is dissolving chemical? Justify.", "What single piece of evidence best shows a new substance has formed?"],
+      "support": ["Station cards with observation prompts."],
+      "challenge": ["Argue the case that hydrating anhydrous copper sulfate is a chemical change despite being reversible."],
+      "homework": "Classify ten household changes with justification.",
+      "exitTicket": "Give the best test for a chemical change."
+    },
+    {
+      "id": "u-reactions.l2",
+      "title": "Word equations",
+      "objectives": ["Write word equations from descriptions of reactions", "Identify reactants and products"],
+      "ncRefs": ["cr.2"],
+      "retrieval": ["Physical or chemical: three examples", "Name the products when magnesium burns."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 7, "detail": "Classification recall." },
+        { "phase": "Explanation", "minutes": 15, "detail": "Structure of a word equation; the arrow read as 'reacts to make', never as 'equals'. Naming rules for oxides, chlorides and sulfates." },
+        { "phase": "Guided practice", "minutes": 15, "detail": "I do / we do / you do across six reactions." },
+        { "phase": "Independent practice", "minutes": 15, "detail": "Twelve word equations from prose descriptions." },
+        { "phase": "Review", "minutes": 8, "detail": "Common naming errors surfaced and corrected." }
+      ],
+      "practical": null,
+      "keyQuestions": ["Why do we never write an equals sign?", "What is the product called when iron reacts with sulfur?"],
+      "support": ["Naming rules card; six of the twelve with the products supplied."],
+      "challenge": ["Write word equations for reactions with two products, including neutralisation."],
+      "homework": "Ten word equations from descriptions.",
+      "exitTicket": "Write the word equation for calcium burning in oxygen."
+    },
+    {
+      "id": "u-reactions.l3",
+      "title": "Combustion and oxidation",
+      "objectives": ["Describe combustion as a reaction with oxygen", "Explain why mass increases when a metal burns", "Write equations for combustion reactions"],
+      "ncRefs": ["cr.3", "aec.4", "en.2"],
+      "wsRefs": ["ws.5", "ws.6"],
+      "retrieval": ["Write a word equation for magnesium plus oxygen", "State the law of conservation of mass."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 7, "detail": "Word equation practice, three items." },
+        { "phase": "Practical", "minutes": 40, "detail": "Burn magnesium in a crucible; mass before and after; calculate the mass of oxygen gained." },
+        { "phase": "Explanation", "minutes": 10, "detail": "Oxidation defined; combustion of fuels contrasted with combustion of metals; incomplete combustion mentioned as a hook to later work." },
+        { "phase": "Review", "minutes": 3, "detail": "Exit ticket." }
+      ],
+      "practical": "p-burning-magnesium",
+      "keyQuestions": ["Why does the mass go up when we burned it away?", "Where did the extra mass come from?"],
+      "support": ["Calculation frame for mass of oxygen gained."],
+      "challenge": ["Use the mass data to find the ratio of magnesium to oxygen atoms and comment on the formula MgO."],
+      "homework": "Explain the mass increase when copper is heated in air.",
+      "exitTicket": "Define oxidation."
+    },
+    {
+      "id": "u-reactions.l4",
+      "title": "Thermal decomposition",
+      "objectives": ["Describe thermal decomposition", "Test for carbon dioxide", "Contrast decomposition with combustion"],
+      "ncRefs": ["cr.3"],
+      "wsRefs": ["ws.7"],
+      "retrieval": ["Define oxidation", "What is the test for carbon dioxide?"],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Four questions on combustion." },
+        { "phase": "Demonstration", "minutes": 15, "detail": "Copper carbonate heated; colour change green to black; limewater turns milky." },
+        { "phase": "Explanation", "minutes": 15, "detail": "Thermal decomposition defined; explicit contrast table against combustion on three criteria: oxygen needed, energy in or out, number of reactants." },
+        { "phase": "Independent practice", "minutes": 17, "detail": "Word equations for the decomposition of four metal carbonates; predict products for a fifth." },
+        { "phase": "Review", "minutes": 5, "detail": "Exit ticket and misconception check." }
+      ],
+      "practical": "p-thermal-decomp",
+      "keyQuestions": ["Why does the limewater go milky?", "Is this reaction exothermic or endothermic? How do you know?"],
+      "support": ["Products supplied for two of the four equations."],
+      "challenge": ["Explain the industrial importance of decomposing calcium carbonate in cement manufacture."],
+      "homework": "Compare combustion and thermal decomposition in a structured table.",
+      "exitTicket": "Give one difference between combustion and thermal decomposition."
+    },
+    {
+      "id": "u-reactions.l5",
+      "title": "Displacement reactions",
+      "objectives": ["Predict whether a displacement reaction will occur", "Explain displacement using the reactivity series", "Write word equations for displacement"],
+      "ncRefs": ["cr.3", "mat.1"],
+      "wsRefs": ["ws.2", "ws.7"],
+      "retrieval": ["Define thermal decomposition", "Which is more reactive, magnesium or copper?"],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 7, "detail": "Reaction-type naming drill." },
+        { "phase": "Predict", "minutes": 8, "detail": "Pupils complete a blank 4x4 prediction grid before any practical work." },
+        { "phase": "Practical", "minutes": 35, "detail": "Metals and metal salt solutions in a well plate; record reaction or no reaction; compare with predictions." },
+        { "phase": "Explanation", "minutes": 8, "detail": "Deduce the reactivity order from the results grid rather than being told it." },
+        { "phase": "Review", "minutes": 2, "detail": "Exit ticket." }
+      ],
+      "practical": "p-displacement",
+      "keyQuestions": ["How do the results let you order the metals without being told?", "Why does copper never displace anything here?"],
+      "support": ["Prediction grid with two cells completed as worked examples."],
+      "challenge": ["Predict outcomes for two metals not tested, and justify from the deduced order."],
+      "homework": "Six displacement word equations with predictions.",
+      "exitTicket": "Will zinc displace copper from copper sulfate? Explain."
+    },
+    {
+      "id": "u-reactions.l6",
+      "title": "Balancing symbol equations",
+      "objectives": ["Balance simple symbol equations", "Explain why balancing is required by conservation of mass"],
+      "ncRefs": ["cr.2", "aec.4"],
+      "retrieval": ["State the law of conservation of mass", "Read the formula Fe2O3."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Formula reading and atom counting, four items." },
+        { "phase": "Explanation", "minutes": 15, "detail": "Model the atom-counting table method. State the rule: never change a subscript. Model three examples of increasing difficulty." },
+        { "phase": "Guided practice", "minutes": 15, "detail": "Balancing ladder, worked together for the first three rungs." },
+        { "phase": "Independent practice", "minutes": 17, "detail": "Balancing ladder continued independently, self-marked; models available for pupils who are stuck." },
+        { "phase": "Review", "minutes": 5, "detail": "Address the subscript misconception explicitly with a non-example." }
+      ],
+      "practical": null,
+      "keyQuestions": ["Why can I not just change H2O to H2O2 to balance the oxygen?", "What does the big number in front actually mean?"],
+      "support": ["Atom-counting tables pre-drawn; model kits at the bench."],
+      "challenge": ["Balance equations involving brackets and polyatomic ions."],
+      "homework": "Twelve equations to balance.",
+      "exitTicket": "Balance: H2 + O2 -> H2O."
+    },
+    {
+      "id": "u-reactions.l7",
+      "title": "Review and assessment",
+      "objectives": ["Consolidate reaction types and equation writing", "Demonstrate understanding in an assessment"],
+      "ncRefs": ["cr.1", "cr.2", "cr.3"],
+      "retrieval": ["Full-unit retrieval grid."],
+      "sequence": [
+        { "phase": "Retrieval warm-up", "minutes": 12, "detail": "Reaction-type flashcards and three equations to balance." },
+        { "phase": "Assessment", "minutes": 45, "detail": "30-mark assessment." },
+        { "phase": "Review", "minutes": 3, "detail": "Self-prediction of score and weakest topic." }
+      ],
+      "practical": null,
+      "keyQuestions": [],
+      "support": ["Periodic table and formula sheet permitted."],
+      "challenge": ["Write and balance an equation for an unfamiliar reaction from a description."],
+      "homework": "Green-pen corrections.",
+      "exitTicket": "Which reaction type do you find hardest to identify?"
+    }
+  ]
+}

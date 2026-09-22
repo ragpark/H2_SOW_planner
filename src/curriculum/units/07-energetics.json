@@ -1,0 +1,132 @@
+{
+  "id": "u-energetics",
+  "title": "Energy Changes and Catalysts",
+  "strapline": "Why some reactions warm the beaker and others chill it — and how we speed things up.",
+  "bigIdea": "Every chemical reaction involves an energy change. Whether a reaction feels hot or cold depends on the balance between energy taken in to break bonds and energy released when new ones form.",
+  "suggestedPosition": 7,
+  "suggestedLessons": 5,
+  "ncRefs": ["en.1", "en.2", "cr.8", "pnm.3"],
+  "wsRefs": ["ws.3", "ws.5", "ws.6", "ws.10"],
+  "priorKnowledge": ["Unit 1: energy and changes of state.", "Unit 4: reaction types, including combustion as an energy-releasing reaction."],
+  "futureLearning": ["GCSE: bond energy calculations, reaction profiles, activation energy, rate of reaction experiments and collision theory."],
+  "misconceptions": [
+    { "misconception": "Endothermic reactions are cold because they 'make cold'.", "whyItSticks": "Pupils treat cold as a substance being produced.", "addressIt": "Insist on the language of energy transfer: energy moves from the surroundings into the reaction, so the surroundings cool." },
+    { "misconception": "A catalyst is used up, or is a reactant.", "whyItSticks": "It is added to the flask like everything else.", "addressIt": "Recover and reweigh the manganese(IV) oxide after the hydrogen peroxide practical to show it is unchanged in mass." },
+    { "misconception": "Exothermic means it will feel hot to touch, always.", "whyItSticks": "Pupils use touch as the sole criterion.", "addressIt": "Use a thermometer for slow exothermic reactions such as rusting, where energy release is real but imperceptible." },
+    { "misconception": "Adding a catalyst changes how much product you get.", "whyItSticks": "Faster is confused with more.", "addressIt": "Compare final volumes of gas collected with and without catalyst — same total, different time." }
+  ],
+  "keyVocabulary": [
+    { "term": "exothermic", "definition": "A reaction that transfers energy to the surroundings, so the temperature of the surroundings rises." },
+    { "term": "endothermic", "definition": "A reaction that takes in energy from the surroundings, so the temperature of the surroundings falls." },
+    { "term": "surroundings", "definition": "Everything outside the reaction itself, including the solution and the container." },
+    { "term": "catalyst", "definition": "A substance that speeds up a reaction without being used up." },
+    { "term": "rate of reaction", "definition": "How quickly reactants are used up or products are formed." }
+  ],
+  "practicals": [
+    { "id": "p-exo-endo", "title": "Classifying reactions as exothermic or endothermic", "type": "class", "apparatus": ["polystyrene cups", "thermometer or temperature probe", "citric acid and sodium hydrogencarbonate", "magnesium and hydrochloric acid", "ammonium chloride and water", "anhydrous copper sulfate and water"], "hazards": ["Dilute acid — irritant", "Ammonium chloride is harmful", "Anhydrous copper sulfate with water gets hot"], "control": ["Goggles; add solid to liquid slowly", "Small quantities only; wash hands after handling copper compounds"], "timing": "40 minutes", "wsFocus": ["ws.5", "ws.6"] },
+    { "id": "p-catalyst", "title": "Catalytic decomposition of hydrogen peroxide", "type": "class-or-demonstration", "apparatus": ["hydrogen peroxide (about 5 volume)", "manganese(IV) oxide", "conical flask, bung and delivery tube", "gas syringe or measuring cylinder over water", "stopclock", "balance"], "hazards": ["Hydrogen peroxide is an irritant; more concentrated solutions are corrosive", "Manganese(IV) oxide is harmful", "Pressure build-up if the delivery tube blocks"], "control": ["Use dilute peroxide only; goggles compulsory", "Never seal the flask; check the delivery tube is clear before starting", "Teacher dispenses the manganese oxide"], "timing": "40 minutes", "wsFocus": ["ws.3", "ws.6", "ws.10"] }
+  ],
+  "assessment": {
+    "formative": ["Predict-then-measure for each reaction in the practical.", "Sorting task: eight everyday processes as exothermic or endothermic.", "Whiteboard check on the definition of a catalyst."],
+    "summative": { "title": "Energy Changes short assessment", "style": "20 marks, 30 minutes, including a graph of gas volume against time to interpret.", "markSchemeNotes": "Credit answers only where the direction of energy transfer relative to the surroundings is stated." }
+  },
+  "lessons": [
+    {
+      "id": "u-energetics.l1",
+      "title": "Exothermic and endothermic",
+      "objectives": ["Define exothermic and endothermic", "Classify reactions from temperature data", "Use the language of energy transfer correctly"],
+      "ncRefs": ["en.2"],
+      "wsRefs": ["ws.5", "ws.6"],
+      "retrieval": ["Is combustion energy releasing or absorbing?", "What happens to temperature during melting?"],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Recall of energy ideas from Units 1 and 4." },
+        { "phase": "Explanation", "minutes": 10, "detail": "Definitions built around the word surroundings; model the correct sentence form for each." },
+        { "phase": "Practical", "minutes": 40, "detail": "Four reactions in polystyrene cups; record start and end temperatures; calculate the change." },
+        { "phase": "Review", "minutes": 2, "detail": "Exit ticket." }
+      ],
+      "practical": "p-exo-endo",
+      "keyQuestions": ["Why use a polystyrene cup rather than a beaker?", "Where has the energy gone in the endothermic reaction?"],
+      "support": ["Results table with a temperature-change column pre-labelled."],
+      "challenge": ["Suggest why the measured temperature change is smaller than the true value, and how to reduce that error."],
+      "homework": "Classify eight everyday processes with justification.",
+      "exitTicket": "Define endothermic in terms of the surroundings."
+    },
+    {
+      "id": "u-energetics.l2",
+      "title": "Energy and changes of state",
+      "objectives": ["Explain energy changes during melting and boiling", "Link state changes to the particle model"],
+      "ncRefs": ["en.1", "pnm.3"],
+      "retrieval": ["Define exothermic", "Sketch a cooling curve."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Cooling curve sketched and annotated from memory." },
+        { "phase": "Explanation", "minutes": 15, "detail": "Energy going into separating particles rather than raising temperature; melting and boiling as endothermic, freezing and condensing as exothermic." },
+        { "phase": "Independent practice", "minutes": 22, "detail": "Annotate a full heating curve for water with energy descriptions at each stage." },
+        { "phase": "Review", "minutes": 15, "detail": "Application: explain why sweating cools you, and why steam burns are worse than boiling water burns." }
+      ],
+      "practical": null,
+      "keyQuestions": ["Why is evaporation cooling?", "Why is freezing exothermic when it feels cold?"],
+      "support": ["Heating curve with three of the five sections already annotated."],
+      "challenge": ["Explain why more energy is needed to boil water than to melt the same mass of ice."],
+      "homework": "Explain, in terms of energy and particles, why a steam burn is more damaging.",
+      "exitTicket": "Is condensing exothermic or endothermic? Justify."
+    },
+    {
+      "id": "u-energetics.l3",
+      "title": "Rates of reaction and catalysts",
+      "objectives": ["Describe what a catalyst does", "Measure the rate of a reaction", "Show that a catalyst is not used up"],
+      "ncRefs": ["cr.8"],
+      "wsRefs": ["ws.3", "ws.6", "ws.10"],
+      "retrieval": ["Define a catalyst", "Name a factor that could speed up a reaction."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Prior knowledge probe on what makes reactions faster." },
+        { "phase": "Practical", "minutes": 40, "detail": "Hydrogen peroxide with and without manganese(IV) oxide; measure gas volume against time; recover and reweigh the catalyst." },
+        { "phase": "Analysis", "minutes": 8, "detail": "Plot both runs on one set of axes; compare gradients and final volumes." },
+        { "phase": "Review", "minutes": 4, "detail": "Address the 'catalyst gives more product' misconception using the final volumes." }
+      ],
+      "practical": "p-catalyst",
+      "keyQuestions": ["Do both runs reach the same final volume? What does that prove?", "How do we know the catalyst was not used up?"],
+      "support": ["Pre-drawn axes; readings taken every 30 seconds rather than 10."],
+      "challenge": ["Calculate the rate over the first 60 seconds for both runs and express the difference as a ratio."],
+      "homework": "Interpret a provided rate graph and explain the shape of the curve.",
+      "exitTicket": "Give two things a catalyst does not change."
+    },
+    {
+      "id": "u-energetics.l4",
+      "title": "Catalysts in industry and in living things",
+      "objectives": ["Describe uses of catalysts in industry", "Explain why catalysts matter economically and environmentally"],
+      "ncRefs": ["cr.8"],
+      "wsRefs": ["ws.8"],
+      "retrieval": ["Define a catalyst", "State one piece of evidence that a catalyst is not used up."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Four questions on catalysts and rates." },
+        { "phase": "Explanation", "minutes": 15, "detail": "Catalytic converters, enzymes as biological catalysts, industrial catalysts and energy saving." },
+        { "phase": "Research and writing", "minutes": 25, "detail": "Structured research task: choose one catalyst and explain its use, benefit and any drawback." },
+        { "phase": "Review", "minutes": 12, "detail": "Short presentations; class builds a summary table." }
+      ],
+      "practical": null,
+      "keyQuestions": ["How does a catalyst save a company money?", "Why does using a catalyst reduce carbon dioxide emissions?"],
+      "support": ["Research sheet with three sources supplied and a paragraph frame."],
+      "challenge": ["Explain why enzymes stop working when heated, linking to the particle model."],
+      "homework": "Complete the summary table for four catalysts.",
+      "exitTicket": "Name one industrial use of a catalyst."
+    },
+    {
+      "id": "u-energetics.l5",
+      "title": "Review and assessment",
+      "objectives": ["Consolidate energetics and rates", "Demonstrate understanding in an assessment"],
+      "ncRefs": ["en.1", "en.2", "cr.8"],
+      "retrieval": ["Full-unit retrieval grid."],
+      "sequence": [
+        { "phase": "Retrieval warm-up", "minutes": 12, "detail": "Definitions and graph interpretation from memory." },
+        { "phase": "Assessment", "minutes": 30, "detail": "20-mark assessment." },
+        { "phase": "Feedback", "minutes": 18, "detail": "Peer marking against a visualised mark scheme; reteach the weakest item." }
+      ],
+      "practical": null,
+      "keyQuestions": [],
+      "support": ["Graph paper and a ruler provided; calculator permitted."],
+      "challenge": ["Design an investigation into how temperature affects the rate of the peroxide reaction."],
+      "homework": "Green-pen corrections.",
+      "exitTicket": "Exothermic or endothermic: which do you find harder to explain?"
+    }
+  ]
+}

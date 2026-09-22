@@ -1,0 +1,194 @@
+{
+  "id": "u-particles",
+  "title": "Particles, Purity and Separating Mixtures",
+  "strapline": "Rebuild the particle model properly, then use it to explain how we pull mixtures apart.",
+  "bigIdea": "Everything is made of particles. What a substance does in the lab is a consequence of what its particles are doing — and separation techniques are simply ways of exploiting a difference between particles.",
+  "suggestedPosition": 1,
+  "suggestedLessons": 7,
+  "ncRefs": ["pnm.1", "pnm.2", "pnm.3", "pnm.4", "pnm.5", "pis.1", "pis.2", "pis.3", "pis.4", "pis.5"],
+  "wsRefs": ["ws.3", "ws.4", "ws.5", "ws.6"],
+  "priorKnowledge": [
+    "KS2: materials can be solids, liquids or gases and can change state by heating and cooling.",
+    "Year 7: particle diagrams for the three states; dissolving as the solute spreading between solvent particles.",
+    "Year 8: melting and boiling points as properties of a substance."
+  ],
+  "futureLearning": [
+    "GCSE: state symbols, heating/cooling curves with quantitative energy, and the limitations of the simple particle model.",
+    "GCSE: chromatography Rf values and purity as a fixed melting point."
+  ],
+  "misconceptions": [
+    { "misconception": "Particles themselves expand, melt or change colour when a substance is heated.", "whyItSticks": "Pupils transfer the bulk property of the substance onto the individual particle — the diagram looks like a small piece of the material.", "addressIt": "Ask 'what colour is one copper atom?' and insist all explanations name what changes: spacing, arrangement and speed — never the particle itself." },
+    { "misconception": "There is air (or 'nothing solid') between the particles in a liquid or solid.", "whyItSticks": "Pupils fill the gaps in the diagram with the only invisible thing they know.", "addressIt": "Label the gaps explicitly as empty space on every board diagram, and challenge 'what's in the gap?' as a routine question." },
+    { "misconception": "Dissolving is the same as melting, and the solute has 'disappeared'.", "whyItSticks": "Both make a solid vanish into a liquid, and everyday speech uses the words interchangeably.", "addressIt": "Run the mass-of-dissolving demo (mass before = mass after) alongside a melting demo; force the vocabulary distinction in every written answer." },
+    { "misconception": "Filtering removes dissolved salt from salty water.", "whyItSticks": "Filtering is pupils' everyday model of 'cleaning' water.", "addressIt": "Filter salt solution and taste-free evidence: evaporate the filtrate and recover the salt. Link back to particle size." },
+    { "misconception": "A pure substance means 'natural', 'clean' or 'good for you'.", "whyItSticks": "Everyday and advertising use of 'pure' (pure orange juice, pure wool).", "addressIt": "Compare product labels with the chemical definition; a pure substance is one substance only, with a sharp melting point." }
+  ],
+  "keyVocabulary": [
+    { "term": "pure substance", "definition": "A substance made of only one element or one compound, with a single sharp melting point." },
+    { "term": "mixture", "definition": "Two or more substances that are not chemically joined and can be separated by physical means." },
+    { "term": "solute / solvent / solution", "definition": "The substance that dissolves / the liquid it dissolves in / the mixture that results." },
+    { "term": "soluble / insoluble", "definition": "Able / not able to dissolve in a given solvent." },
+    { "term": "filtrate / residue", "definition": "The liquid that passes through the filter paper / the solid left behind on it." },
+    { "term": "distillate", "definition": "The pure liquid collected after evaporating and condensing." },
+    { "term": "diffusion", "definition": "The spreading of particles from a region of high concentration to low concentration, due to random particle motion." },
+    { "term": "chromatogram", "definition": "The paper record produced by chromatography showing the separated components." }
+  ],
+  "practicals": [
+    { "id": "p-cooling-curve", "title": "Cooling curve of stearic acid (or salol)", "type": "measurement", "apparatus": ["boiling tube of stearic acid", "water bath at 80 degC", "thermometer or temperature probe", "stopclock", "clamp stand"], "hazards": ["Hot water bath — scald risk", "Molten stearic acid up to 80 degC"], "control": ["Clamp the tube; do not hold it", "Tie hair back; goggles worn throughout", "Allow tube to cool in the rack, not in cold water"], "timing": "30 minutes including 12 minutes of readings", "wsFocus": ["ws.5", "ws.6"] },
+    { "id": "p-rock-salt", "title": "Separating rock salt (filtration then evaporation)", "type": "skills", "apparatus": ["rock salt", "pestle and mortar", "beaker", "filter funnel and paper", "evaporating basin", "tripod, gauze, Bunsen"], "hazards": ["Bunsen flame", "Spitting of hot saturated solution near dryness"], "control": ["Stop heating while a little liquid remains and let residual heat finish the job", "Goggles; tie back hair; stand while using the Bunsen"], "timing": "45–50 minutes", "wsFocus": ["ws.4", "ws.5"] },
+    { "id": "p-chromatography", "title": "Chromatography of ink or food colourings", "type": "skills", "apparatus": ["chromatography paper", "beaker", "pencil", "water-soluble pens", "capillary tube or cocktail stick"], "hazards": ["Low hazard"], "control": ["Standard lab rules; goggles if solvent other than water is used"], "timing": "30 minutes", "wsFocus": ["ws.5", "ws.7"] },
+    { "id": "p-distillation", "title": "Simple distillation of salt solution or ink", "type": "demonstration-or-class", "apparatus": ["round-bottomed or conical flask", "delivery tube or Liebig condenser", "beaker of iced water", "anti-bumping granules", "Bunsen or heating mantle"], "hazards": ["Hot glassware and steam — scald risk", "Suck-back if heating is stopped with the tube submerged"], "control": ["Never seal the apparatus", "Use anti-bumping granules", "Remove heat before removing the delivery tube from the collecting vessel"], "timing": "40 minutes", "wsFocus": ["ws.4", "ws.8"] }
+  ],
+  "assessment": {
+    "formative": [
+      "Particle diagram 'spot the error' card sort at the end of Lesson 1.",
+      "Mini-whiteboard rapid check: name the technique for five named mixtures.",
+      "Six-mark extended writing: 'Describe how you would obtain pure water from seawater' with a success-criteria checklist."
+    ],
+    "summative": {
+      "title": "Particles and Separation end-of-unit assessment",
+      "style": "30 marks, 45 minutes: 10 marks recall, 12 marks application, 8 marks working scientifically on a cooling-curve dataset.",
+      "markSchemeNotes": "Credit particle explanations only where spacing, arrangement AND motion are addressed. In the WS section credit identification of anomalies and a reasoned improvement."
+    }
+  },
+  "lessons": [
+    {
+      "id": "u-particles.l1",
+      "title": "Rebuilding the particle model",
+      "objectives": ["Describe the arrangement, spacing and motion of particles in solids, liquids and gases", "Explain the properties of each state using the particle model", "Explain gas pressure in terms of particle collisions"],
+      "ncRefs": ["pnm.1", "pnm.4"],
+      "retrieval": ["Sketch the three states from memory", "Which state has the highest density and why?", "Year 8 recall: what is a physical property?"],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Three-question low-stakes quiz on mini-whiteboards; pupils draw and label the three states." },
+        { "phase": "Explanation", "minutes": 15, "detail": "Teacher model: build each state on the board using the same three descriptors every time — arrangement, spacing, motion. Introduce gas pressure as particles colliding with the container walls." },
+        { "phase": "Guided practice", "minutes": 12, "detail": "Worked example then 'your turn': explain why gases can be compressed but liquids cannot." },
+        { "phase": "Independent practice", "minutes": 15, "detail": "Property-to-explanation matching grid; pupils must write the explanation in full sentences using the three descriptors." },
+        { "phase": "Review", "minutes": 10, "detail": "Card sort: six particle diagrams, three contain errors. Pupils identify and correct in writing." }
+      ],
+      "practical": null,
+      "keyQuestions": ["What is in the gaps between particles?", "Why does a gas fill its container but a liquid does not?", "What would happen to gas pressure if we halved the volume of the container?"],
+      "support": ["Provide the three descriptors as a sentence stem strip: 'The particles are arranged... they are... apart and they move by...'"],
+      "challenge": ["Explain why a sealed bag of crisps expands on an aeroplane, in terms of pressure inside and outside."],
+      "homework": "Six-question retrieval sheet on states and density; one extended question on gas pressure.",
+      "exitTicket": "Explain, in terms of particles, why a solid has a fixed shape."
+    },
+    {
+      "id": "u-particles.l2",
+      "title": "Changes of state and energy",
+      "objectives": ["Name and describe all six changes of state", "Explain why temperature stays constant during a change of state", "Interpret a cooling curve"],
+      "ncRefs": ["pnm.2", "pnm.3", "en.1"],
+      "retrieval": ["Name the three states and one property of each", "What does the particle model say happens on heating?"],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 7, "detail": "Two-minute brain dump of everything known about changes of state; pair and add." },
+        { "phase": "Explanation", "minutes": 12, "detail": "Six changes of state on a single diagram; introduce energy going into breaking forces between particles rather than raising temperature." },
+        { "phase": "Practical", "minutes": 30, "detail": "Cooling curve of stearic acid; readings every minute for 12 minutes; plot live on graph paper." },
+        { "phase": "Analysis", "minutes": 8, "detail": "Annotate the plateau: what are the particles doing here, and where is the energy going?" },
+        { "phase": "Review", "minutes": 3, "detail": "Exit ticket." }
+      ],
+      "practical": "p-cooling-curve",
+      "keyQuestions": ["If we keep heating, why does the temperature stop rising?", "Where has the energy gone if not into temperature?"],
+      "support": ["Pre-drawn axes with the first three points plotted."],
+      "challenge": ["Predict and sketch the cooling curve for a mixture rather than a pure substance, and justify the difference."],
+      "homework": "Interpret a provided heating curve for water from -20 degC to 120 degC; label all sections.",
+      "exitTicket": "During melting the temperature does not change. Explain why."
+    },
+    {
+      "id": "u-particles.l3",
+      "title": "Diffusion and Brownian motion",
+      "objectives": ["Describe diffusion in terms of random particle motion", "Explain the factors that affect the rate of diffusion", "Describe the evidence Brownian motion gives for particles"],
+      "ncRefs": ["pnm.5", "pis.3"],
+      "retrieval": ["Recall the three descriptors for a gas", "Which state diffuses fastest and why?"],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 7, "detail": "Quick-fire recall on changes of state from last lesson and from Lesson 1." },
+        { "phase": "Demonstration", "minutes": 12, "detail": "Ammonia and hydrochloric acid diffusion tube (teacher demo, fume cupboard) — predict where the white ring forms and why it is off-centre." },
+        { "phase": "Explanation", "minutes": 12, "detail": "Diffusion defined; connect to random motion. Brownian motion as historical evidence — smoke cell footage." },
+        { "phase": "Independent practice", "minutes": 18, "detail": "Potassium manganate(VII) in hot and cold water in petri dishes; time to spread; write a comparative explanation." },
+        { "phase": "Review", "minutes": 11, "detail": "Structured discussion on the nature of evidence: how did Brownian motion change what scientists believed?" }
+      ],
+      "practical": "p-chromatography",
+      "keyQuestions": ["Why does diffusion happen without anything pushing the particles?", "Why is the ring nearer the hydrochloric acid end?"],
+      "support": ["Sentence starters for the comparative explanation: 'In the hot water the particles... therefore...'"],
+      "challenge": ["Relate rate of diffusion to particle mass and explain the position of the ammonium chloride ring quantitatively."],
+      "homework": "Explain why you can smell toast from another room, and why it takes longer on a cold morning.",
+      "exitTicket": "Define diffusion in one sentence using the word 'random'."
+    },
+    {
+      "id": "u-particles.l4",
+      "title": "Pure substances, mixtures and solutions",
+      "objectives": ["Define a pure substance chemically", "Distinguish dissolving from melting", "Use melting point data to judge purity"],
+      "ncRefs": ["pis.1", "pis.2", "pis.5"],
+      "retrieval": ["What is diffusion?", "Recall the plateau on a cooling curve."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Everyday 'pure' product labels on the board — are these pure in the chemical sense? Vote and justify." },
+        { "phase": "Explanation", "minutes": 15, "detail": "Chemical definition of pure; sharp melting point as the test. Dissolving vs melting modelled explicitly side by side." },
+        { "phase": "Demonstration", "minutes": 10, "detail": "Mass before and after dissolving on a balance — conservation of mass introduced informally." },
+        { "phase": "Independent practice", "minutes": 17, "detail": "Melting point data table: pupils judge which samples are pure and justify each judgement." },
+        { "phase": "Review", "minutes": 10, "detail": "Vocabulary discrimination task: dissolve, melt, disappear, react — use each correctly in a sentence." }
+      ],
+      "practical": null,
+      "keyQuestions": ["Is seawater pure? Is distilled water pure? Is air pure?", "How can a melting point tell you a sample is contaminated?"],
+      "support": ["Word bank with definitions; two of the four data rows worked as examples."],
+      "challenge": ["Explain why a mixture melts over a range rather than at a single temperature."],
+      "homework": "Write a short paragraph for a supermarket explaining why 'pure orange juice' is not chemically pure.",
+      "exitTicket": "Give the chemical definition of a pure substance and one way to test it."
+    },
+    {
+      "id": "u-particles.l5",
+      "title": "Filtration, evaporation and crystallisation",
+      "objectives": ["Select filtration or evaporation for a given mixture and justify the choice", "Carry out a two-stage separation safely", "Use the terms filtrate and residue accurately"],
+      "ncRefs": ["pis.4"],
+      "wsRefs": ["ws.4", "ws.5"],
+      "retrieval": ["Define solute, solvent and solution", "Is salt water a mixture or a compound?"],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 7, "detail": "Three recall questions plus one application question on purity." },
+        { "phase": "Explanation and safety", "minutes": 10, "detail": "Method modelled step by step; safety points elicited from pupils then confirmed. Emphasise stopping heating before dryness." },
+        { "phase": "Practical", "minutes": 45, "detail": "Separating rock salt: grind, dissolve, filter, evaporate to crystallise." },
+        { "phase": "Review", "minutes": 8, "detail": "Which step removed which impurity, and what property was being exploited each time?" }
+      ],
+      "practical": "p-rock-salt",
+      "keyQuestions": ["Why does filtering not remove the salt?", "What property difference does each step rely on?"],
+      "support": ["Method as a six-step numbered card sequence to arrange before starting."],
+      "challenge": ["Calculate percentage yield of salt recovered and account for any losses."],
+      "homework": "Annotate a diagram of filtration apparatus and explain each labelled part.",
+      "exitTicket": "Name the residue and the filtrate in the rock salt practical."
+    },
+    {
+      "id": "u-particles.l6",
+      "title": "Distillation and chromatography",
+      "objectives": ["Explain how distillation separates a solvent from a solution", "Explain how chromatography separates a mixture of soluble substances", "Interpret a chromatogram"],
+      "ncRefs": ["pis.4", "pis.5"],
+      "retrieval": ["Which technique separates an insoluble solid from a liquid?", "What is a distillate?"],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Match five mixtures to techniques; justify one choice in writing." },
+        { "phase": "Demonstration", "minutes": 15, "detail": "Simple distillation of ink or salt solution; narrate the evaporate-then-condense cycle at the particle level." },
+        { "phase": "Practical", "minutes": 30, "detail": "Chromatography of pens; identify which pen was used in a 'forged note' scenario." },
+        { "phase": "Review", "minutes": 7, "detail": "Interpret a teacher-supplied chromatogram: how many substances, which are pure?" }
+      ],
+      "practical": "p-distillation",
+      "keyQuestions": ["Why must the pencil line be above the solvent level?", "Why is a pencil used and not a pen?", "Which substance travels furthest and why?"],
+      "support": ["Labelled diagram of the distillation apparatus provided with three gaps only."],
+      "challenge": ["Explain fractional distillation of crude oil as an extension of the same principle, using boiling point differences."],
+      "homework": "Exam-style six-mark question: describe how to obtain pure water from seawater.",
+      "exitTicket": "A chromatogram shows one spot. What does that tell you about the substance?"
+    },
+    {
+      "id": "u-particles.l7",
+      "title": "Assessment and feedback",
+      "objectives": ["Demonstrate understanding of the particle model and separation techniques", "Respond to feedback to improve an extended answer"],
+      "ncRefs": ["pnm.1", "pnm.2", "pis.4", "pis.5"],
+      "wsRefs": ["ws.7", "ws.8"],
+      "retrieval": ["Full-unit retrieval grid, 15 questions, completed in silence."],
+      "sequence": [
+        { "phase": "Retrieval warm-up", "minutes": 10, "detail": "Fifteen-question grid covering all six lessons; self-mark and RAG-rate." },
+        { "phase": "Assessment", "minutes": 45, "detail": "End-of-unit assessment, 30 marks." },
+        { "phase": "Review", "minutes": 5, "detail": "Collect papers; pupils record their own prediction of strongest and weakest section." }
+      ],
+      "practical": null,
+      "keyQuestions": [],
+      "support": ["Reader/scribe arrangements as per pupil passports; knowledge organiser permitted for identified pupils."],
+      "challenge": ["Extension WS question: evaluate a flawed cooling-curve method and propose two improvements."],
+      "homework": "Green-pen improvement of the six-mark question, using the modelled answer.",
+      "exitTicket": "One thing I will revise before the next unit is..."
+    }
+  ]
+}

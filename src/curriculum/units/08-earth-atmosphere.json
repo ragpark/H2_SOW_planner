@@ -1,0 +1,155 @@
+{
+  "id": "u-earth",
+  "title": "Earth, Atmosphere and Climate",
+  "strapline": "From the core to the carbon cycle: chemistry on a planetary scale.",
+  "bigIdea": "The Earth recycles its materials through the rock and carbon cycles over vast timescales. Human activity has changed the rate of one part of that cycle faster than the rest of the system can absorb.",
+  "suggestedPosition": 8,
+  "suggestedLessons": 6,
+  "ncRefs": ["ea.1", "ea.2", "ea.3", "ea.4", "ea.5", "ea.6"],
+  "wsRefs": ["ws.6", "ws.7", "ws.8", "ws.9"],
+  "priorKnowledge": ["Unit 4: combustion produces carbon dioxide.", "Unit 3: non-metal oxides are acidic."],
+  "futureLearning": ["GCSE: evolution of the atmosphere, greenhouse gases and the carbon footprint, atmospheric pollutants from fuels."],
+  "misconceptions": [
+    { "misconception": "The greenhouse effect is the same thing as the hole in the ozone layer.", "whyItSticks": "Both are atmospheric environmental problems learned at the same time.", "addressIt": "Teach them as two separate diagrams with different gases, different altitudes and different consequences; test discrimination explicitly." },
+    { "misconception": "The Earth's core is molten all the way through.", "whyItSticks": "The image of lava dominates.", "addressIt": "Use a labelled cross-section showing a solid inner core and liquid outer core; give the pressure reason for the solid inner core." },
+    { "misconception": "Rocks are permanent and unchanging.", "whyItSticks": "Human timescales are too short to observe change.", "addressIt": "Timescale comparison activity; show weathering evidence in local buildings and gravestones." },
+    { "misconception": "Carbon dioxide is the main gas in the atmosphere, because it is talked about most.", "whyItSticks": "Frequency of mention is mistaken for abundance.", "addressIt": "Draw the composition to scale as a pie chart and make pupils locate the carbon dioxide sliver themselves." }
+  ],
+  "keyVocabulary": [
+    { "term": "crust, mantle, core", "definition": "The layers of the Earth, from the thin outer rocky shell to the dense iron and nickel centre." },
+    { "term": "igneous rock", "definition": "Rock formed when molten rock cools and solidifies." },
+    { "term": "sedimentary rock", "definition": "Rock formed when layers of sediment are compacted and cemented." },
+    { "term": "metamorphic rock", "definition": "Rock changed by heat and pressure without melting." },
+    { "term": "weathering", "definition": "The breakdown of rock in place by physical, chemical or biological processes." },
+    { "term": "greenhouse gas", "definition": "A gas that absorbs and re-emits infrared radiation, warming the atmosphere." },
+    { "term": "carbon sink", "definition": "A store that absorbs more carbon than it releases, such as the oceans or forests." }
+  ],
+  "practicals": [
+    { "id": "p-air-composition", "title": "Measuring the percentage of oxygen in air", "type": "demonstration", "apparatus": ["two gas syringes connected by a silica tube", "copper turnings", "Bunsen burner", "clamp stands"], "hazards": ["Very hot silica tube", "Hot gas pushed through the syringes"], "control": ["Teacher demonstration; allow full cooling before final readings", "Clamp securely; keep the syringe plungers free"], "timing": "20 minutes", "wsFocus": ["ws.6", "ws.7"] },
+    { "id": "p-rock-tests", "title": "Identifying rock types from samples", "type": "skills", "apparatus": ["labelled rock samples: granite, basalt, limestone, sandstone, marble, slate", "hand lenses", "dilute hydrochloric acid in dropper bottles", "streak plates"], "hazards": ["Dilute acid — irritant", "Sharp rock edges"], "control": ["Goggles when using acid; one drop only per sample", "Handle samples over the bench, not over feet"], "timing": "35 minutes", "wsFocus": ["ws.5", "ws.7"] },
+    { "id": "p-co2-warming", "title": "Modelling the greenhouse effect", "type": "class", "apparatus": ["two identical bottles or beakers with lids", "temperature probes or thermometers", "lamp", "source of carbon dioxide", "stopclock"], "hazards": ["Hot lamp", "Carbon dioxide — do not fill an enclosed room"], "control": ["Lamp on a stable stand away from edges; do not touch while lit", "Ventilate the room; use small quantities of gas"], "timing": "35 minutes", "wsFocus": ["ws.3", "ws.6", "ws.8"] }
+  ],
+  "assessment": {
+    "formative": ["Rock cycle sequencing task with justification of each arrow.", "Pie chart completion of atmospheric composition from memory.", "Claim-evidence-reasoning paragraph on climate data."],
+    "summative": { "title": "Earth and Atmosphere assessment", "style": "25 marks, 35 minutes, including a real climate dataset to interpret and one evaluation question.", "markSchemeNotes": "Credit conclusions that distinguish correlation from cause and that quote figures from the data." }
+  },
+  "lessons": [
+    {
+      "id": "u-earth.l1",
+      "title": "The structure and composition of the Earth",
+      "objectives": ["Describe the layers of the Earth", "Describe the composition of the crust", "Explain how we know what is inside the Earth"],
+      "ncRefs": ["ea.1", "ea.2"],
+      "wsRefs": ["ws.9"],
+      "retrieval": ["Name three metals", "Which is denser, iron or rock?"],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Prior knowledge probe: draw what you think is inside the Earth." },
+        { "phase": "Explanation", "minutes": 18, "detail": "Cross-section built layer by layer with thicknesses and states; emphasise the solid inner core and the pressure reason for it. Evidence from seismic waves." },
+        { "phase": "Independent practice", "minutes": 20, "detail": "Scale drawing of the layers; annotate with composition and state." },
+        { "phase": "Review", "minutes": 14, "detail": "Discussion: we have never drilled past the crust, so how can we claim to know? Evidence and inference distinguished." }
+      ],
+      "practical": null,
+      "keyQuestions": ["Why is the inner core solid if it is hotter than the outer core?", "What counts as evidence when you cannot observe directly?"],
+      "support": ["Scale conversion done for pupils; circle template provided."],
+      "challenge": ["Explain how the difference between P and S waves reveals a liquid layer."],
+      "homework": "Label and describe the four layers with one fact each.",
+      "exitTicket": "Name the two metals that make up most of the core."
+    },
+    {
+      "id": "u-earth.l2",
+      "title": "Rock types and the rock cycle",
+      "objectives": ["Identify igneous, sedimentary and metamorphic rocks", "Describe how each type forms", "Sequence the rock cycle"],
+      "ncRefs": ["ea.3"],
+      "wsRefs": ["ws.5", "ws.7"],
+      "retrieval": ["Name the layers of the Earth", "What is magma?"],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 7, "detail": "Earth structure recall." },
+        { "phase": "Practical", "minutes": 35, "detail": "Examine six rock samples with hand lenses; test with acid; classify and justify using observable features." },
+        { "phase": "Explanation", "minutes": 12, "detail": "Formation processes for each type; crystal size linked to cooling rate." },
+        { "phase": "Review", "minutes": 6, "detail": "Sequence rock cycle cards and justify two of the arrows in writing." }
+      ],
+      "practical": "p-rock-tests",
+      "keyQuestions": ["Why does granite have larger crystals than basalt?", "Why does limestone fizz with acid but slate does not?"],
+      "support": ["Identification key supplied as a flowchart."],
+      "challenge": ["Explain how the same atoms could pass through all three rock types over time."],
+      "homework": "Draw and annotate the rock cycle.",
+      "exitTicket": "Name the rock type formed by heat and pressure without melting."
+    },
+    {
+      "id": "u-earth.l3",
+      "title": "The composition of the atmosphere",
+      "objectives": ["State the composition of the atmosphere", "Describe how the percentage of oxygen can be measured"],
+      "ncRefs": ["ea.5"],
+      "wsRefs": ["ws.6", "ws.7"],
+      "retrieval": ["Name three gases in the air", "What is the test for carbon dioxide?"],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Estimate the percentages of the main gases before being told." },
+        { "phase": "Demonstration", "minutes": 20, "detail": "Copper and gas syringes; oxygen removed by reaction; calculate the percentage from the volume change." },
+        { "phase": "Explanation", "minutes": 12, "detail": "Actual composition; construct a scale pie chart and locate carbon dioxide at 0.04 per cent." },
+        { "phase": "Review", "minutes": 20, "detail": "Address the abundance misconception directly; discuss how a tiny percentage can still matter enormously." }
+      ],
+      "practical": "p-air-composition",
+      "keyQuestions": ["Why must the apparatus cool before the final reading?", "If carbon dioxide is only 0.04 per cent, why does it matter?"],
+      "support": ["Percentage calculation frame supplied."],
+      "challenge": ["Evaluate the accuracy of the syringe method and identify two sources of error."],
+      "homework": "Draw a scale pie chart of atmospheric composition with a written commentary.",
+      "exitTicket": "State the percentage of nitrogen and of oxygen in air."
+    },
+    {
+      "id": "u-earth.l4",
+      "title": "The carbon cycle",
+      "objectives": ["Describe the carbon cycle", "Identify carbon sources and sinks", "Explain how human activity alters the balance"],
+      "ncRefs": ["ea.4", "ea.6"],
+      "retrieval": ["State the percentage of carbon dioxide in air", "Name a reaction that produces carbon dioxide."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Composition recall and combustion equations." },
+        { "phase": "Explanation", "minutes": 15, "detail": "Carbon cycle built on the board as a system of stores and flows; photosynthesis, respiration, combustion, decomposition, dissolving in oceans." },
+        { "phase": "Independent practice", "minutes": 22, "detail": "Complete and annotate a carbon cycle diagram; mark which flows human activity has increased." },
+        { "phase": "Review", "minutes": 15, "detail": "Discussion framed as a balance: the problem is the rate of release exceeding the rate of absorption." }
+      ],
+      "practical": null,
+      "keyQuestions": ["Which process removes carbon dioxide from the air?", "Why does burning fossil fuel add carbon that the cycle was not handling?"],
+      "support": ["Cycle diagram with four of the seven arrows labelled."],
+      "challenge": ["Explain why deforestation affects the cycle in two distinct ways."],
+      "homework": "Explain the role of the oceans as a carbon sink.",
+      "exitTicket": "Name one carbon source and one carbon sink."
+    },
+    {
+      "id": "u-earth.l5",
+      "title": "Carbon dioxide and climate",
+      "objectives": ["Explain the greenhouse effect", "Interpret climate data", "Distinguish correlation from cause"],
+      "ncRefs": ["ea.6"],
+      "wsRefs": ["ws.7", "ws.8", "ws.9"],
+      "retrieval": ["Describe the carbon cycle in three steps", "Name two greenhouse gases."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Carbon cycle recall." },
+        { "phase": "Practical", "minutes": 25, "detail": "Model the greenhouse effect: two containers, one enriched with carbon dioxide, under a lamp; record temperature against time." },
+        { "phase": "Data task", "minutes": 20, "detail": "Interpret real carbon dioxide concentration and global temperature data; describe the pattern quoting figures." },
+        { "phase": "Review", "minutes": 7, "detail": "Explicit teaching on correlation and cause: what would additional evidence need to show?" }
+      ],
+      "practical": "p-co2-warming",
+      "keyQuestions": ["Does this data prove carbon dioxide causes warming?", "What are the limitations of our bottle model?"],
+      "support": ["Data extracts with axes labelled and two guiding questions per graph."],
+      "challenge": ["Evaluate the bottle model as a representation of the real atmosphere, naming three differences."],
+      "homework": "Claim-evidence-reasoning paragraph using the climate data.",
+      "exitTicket": "Explain in one sentence how a greenhouse gas warms the Earth."
+    },
+    {
+      "id": "u-earth.l6",
+      "title": "Review and assessment",
+      "objectives": ["Consolidate Earth and atmosphere knowledge", "Demonstrate data interpretation skills"],
+      "ncRefs": ["ea.1", "ea.2", "ea.3", "ea.4", "ea.5", "ea.6"],
+      "retrieval": ["Full-unit retrieval grid."],
+      "sequence": [
+        { "phase": "Retrieval warm-up", "minutes": 12, "detail": "Rock cycle, Earth layers and atmospheric composition from memory." },
+        { "phase": "Assessment", "minutes": 35, "detail": "25-mark assessment with a climate dataset." },
+        { "phase": "Feedback", "minutes": 13, "detail": "Whole-class feedback on the evaluation question." }
+      ],
+      "practical": null,
+      "keyQuestions": [],
+      "support": ["Data provided in both table and graph form."],
+      "challenge": ["Write a balanced 200-word response to a climate-sceptic claim, using evidence."],
+      "homework": "Green-pen corrections.",
+      "exitTicket": "What is one thing about climate science you now understand better?"
+    }
+  ]
+}

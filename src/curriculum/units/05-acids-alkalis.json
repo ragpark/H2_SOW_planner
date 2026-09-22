@@ -1,0 +1,174 @@
+{
+  "id": "u-acids",
+  "title": "Acids, Alkalis and Salts",
+  "strapline": "The pH scale, neutralisation, and making a salt you can hold in your hand.",
+  "bigIdea": "Acids and alkalis are opposites that cancel each other out. Neutralisation is one reaction pattern that explains indigestion tablets, soil treatment and salt production alike.",
+  "suggestedPosition": 5,
+  "suggestedLessons": 7,
+  "ncRefs": ["cr.4", "cr.5", "cr.6", "cr.7", "pt.6"],
+  "wsRefs": ["ws.3", "ws.4", "ws.5", "ws.6", "ws.10"],
+  "priorKnowledge": ["Unit 3: metal and non-metal oxides and their acidity.", "Unit 4: word equations, displacement, reactivity."],
+  "futureLearning": ["GCSE: strong and weak acids, titrations, preparing pure dry salt samples, ionic equations for neutralisation."],
+  "misconceptions": [
+    { "misconception": "All acids are dangerous and all alkalis are safe.", "whyItSticks": "Film and media portray acid as uniquely corrosive.", "addressIt": "Compare citric acid (in food) with sodium hydroxide (severely corrosive); establish that concentration, not the label acid or alkali, governs hazard." },
+    { "misconception": "Neutral means nothing is there, or means pure water only.", "whyItSticks": "The word neutral suggests absence.", "addressIt": "Show that a salt solution made by neutralisation is neutral yet full of dissolved substance." },
+    { "misconception": "A higher pH number always means a stronger, more dangerous chemical.", "whyItSticks": "Pupils read the scale as a single danger axis.", "addressIt": "Plot the scale on the board as two directions from 7; ask which is more hazardous, pH 1 or pH 14, to force the two-ended reading." },
+    { "misconception": "The salt produced in neutralisation is table salt.", "whyItSticks": "Everyday meaning of the word salt.", "addressIt": "Make copper sulfate crystals and ask whether they would put it on their chips; define salt as a family of compounds." }
+  ],
+  "keyVocabulary": [
+    { "term": "acid", "definition": "A substance with a pH below 7 that produces hydrogen ions in solution." },
+    { "term": "alkali", "definition": "A soluble base with a pH above 7." },
+    { "term": "neutralisation", "definition": "The reaction between an acid and a base producing a salt and water." },
+    { "term": "indicator", "definition": "A substance that changes colour depending on the pH." },
+    { "term": "salt", "definition": "The compound formed when the hydrogen in an acid is replaced by a metal." },
+    { "term": "corrosive", "definition": "Able to destroy or damage living tissue or materials on contact." }
+  ],
+  "practicals": [
+    { "id": "p-ph-household", "title": "Testing the pH of household substances", "type": "skills", "apparatus": ["universal indicator paper and solution", "spotting tile", "samples: vinegar, lemon juice, washing soda, soap solution, bicarbonate, water"], "hazards": ["Washing soda solution is an irritant"], "control": ["Goggles; no tasting of any substance under any circumstances; wash hands afterwards"], "timing": "30 minutes", "wsFocus": ["ws.5", "ws.6"] },
+    { "id": "p-neutralisation-curve", "title": "Following a neutralisation with indicator", "type": "measurement", "apparatus": ["burette or graduated pipette", "dilute hydrochloric acid", "sodium hydroxide solution (0.1 mol/dm3)", "universal indicator", "conical flask", "white tile"], "hazards": ["Sodium hydroxide is corrosive even when dilute — eye risk", "Hydrochloric acid is an irritant"], "control": ["Goggles compulsory and checked before dispensing", "Use 0.1 mol/dm3 or weaker; fill burettes below eye level with a funnel", "Spillages neutralised and reported immediately"], "timing": "45 minutes", "wsFocus": ["ws.3", "ws.5", "ws.10"] },
+    { "id": "p-making-salt", "title": "Making copper sulfate crystals", "type": "class", "apparatus": ["dilute sulfuric acid", "copper(II) oxide", "beaker, filter funnel and paper", "evaporating basin", "tripod, gauze, Bunsen"], "hazards": ["Copper oxide is harmful", "Hot acid; spitting near dryness"], "control": ["Warm the acid gently, never boil", "Stop heating while liquid remains; crystallise on a windowsill", "Goggles throughout; wash hands after"], "timing": "50 minutes over one or two lessons", "wsFocus": ["ws.4", "ws.5"] },
+    { "id": "p-acid-metal", "title": "Acid plus metal and the hydrogen test", "type": "class", "apparatus": ["dilute hydrochloric acid", "magnesium ribbon, zinc, iron filings", "test tubes and rack", "splints"], "hazards": ["Hydrogen is flammable — small quantities only", "Exothermic reaction with magnesium warms the tube"], "control": ["Goggles; use test tube quantities only, never a large flask", "Light the splint away from the acid bottles; no naked flames near the hydrogen supply"], "timing": "35 minutes", "wsFocus": ["ws.5", "ws.7"] }
+  ],
+  "assessment": {
+    "formative": ["pH prediction before testing, then compare.", "General equation drill: acid + metal -> ? and acid + base -> ?", "Salt-naming rapid quiz from acid and metal names."],
+    "summative": { "title": "Acids and Alkalis assessment", "style": "30 marks, 45 minutes, including a required-practical style method question and a results-interpretation question.", "markSchemeNotes": "In the method question credit control of variables and a named safety precaution linked to a specific hazard, not generic 'be careful'." }
+  },
+  "lessons": [
+    {
+      "id": "u-acids.l1",
+      "title": "The pH scale and indicators",
+      "objectives": ["Describe the pH scale", "Use indicators to classify substances", "Explain why pH 1 and pH 14 are both hazardous"],
+      "ncRefs": ["cr.5"],
+      "wsRefs": ["ws.5"],
+      "retrieval": ["Are metal oxides acidic or basic?", "Name an indicator."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Recall of Unit 3 oxide behaviour." },
+        { "phase": "Explanation", "minutes": 12, "detail": "The pH scale drawn as two directions from neutral; universal indicator colours; distinction between strong and concentrated flagged but not developed." },
+        { "phase": "Practical", "minutes": 30, "detail": "Test eight household substances; predict first, then measure; record in a results table." },
+        { "phase": "Review", "minutes": 10, "detail": "Discuss surprises; address the 'acids are dangerous, alkalis are safe' misconception directly with the oven cleaner example." }
+      ],
+      "practical": "p-ph-household",
+      "keyQuestions": ["Which is more hazardous, pH 1 or pH 14?", "Why is a colour chart needed rather than just 'it went red'?"],
+      "support": ["Results table with substances pre-listed and a colour key at the bench."],
+      "challenge": ["Research why red cabbage works as an indicator and make a prediction about its colour at pH 9."],
+      "homework": "Annotate a pH scale with five named substances.",
+      "exitTicket": "State the pH of a neutral substance and name one."
+    },
+    {
+      "id": "u-acids.l2",
+      "title": "Neutralisation",
+      "objectives": ["Define neutralisation", "Write the general equation for acid plus base", "Explain everyday uses of neutralisation"],
+      "ncRefs": ["cr.4", "cr.7"],
+      "retrieval": ["State the pH of an acid, an alkali and a neutral solution", "Name an alkali."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 7, "detail": "pH recall, four items." },
+        { "phase": "Explanation", "minutes": 15, "detail": "Acid + base -> salt + water established as a pattern; three worked examples; naming the salt from the acid." },
+        { "phase": "Practical", "minutes": 30, "detail": "Add alkali to acid drop by drop with universal indicator; record the colour sequence and identify the neutral point." },
+        { "phase": "Review", "minutes": 8, "detail": "Apply to indigestion remedies and lime on acidic soil." }
+      ],
+      "practical": "p-neutralisation-curve",
+      "keyQuestions": ["What is present in the flask at exactly pH 7?", "Why does adding more alkali past neutral raise the pH?"],
+      "support": ["Colour-sequence strip to annotate rather than construct."],
+      "challenge": ["Sketch a pH-against-volume graph and explain the shape of the steep section."],
+      "homework": "Explain how indigestion tablets work, using a word equation.",
+      "exitTicket": "Complete: acid + base -> ... + ..."
+    },
+    {
+      "id": "u-acids.l3",
+      "title": "Acids and metals",
+      "objectives": ["Describe the reaction of an acid with a metal", "Test for hydrogen", "Relate the vigour of the reaction to reactivity"],
+      "ncRefs": ["cr.6", "mat.1"],
+      "wsRefs": ["ws.5", "ws.7"],
+      "retrieval": ["Write the general equation for neutralisation", "Which is more reactive, magnesium or zinc?"],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 7, "detail": "General equation and reactivity recall." },
+        { "phase": "Explanation", "minutes": 10, "detail": "Acid + metal -> salt + hydrogen; the squeaky pop test modelled." },
+        { "phase": "Practical", "minutes": 35, "detail": "Three metals with hydrochloric acid; observe rate of fizzing; test the gas; rank the metals." },
+        { "phase": "Review", "minutes": 8, "detail": "Link the ranking back to the displacement results from Unit 4 — same order, different evidence." }
+      ],
+      "practical": "p-acid-metal",
+      "keyQuestions": ["Why does copper not react?", "How does the fizzing rate give evidence of reactivity?"],
+      "support": ["Observation table with a fizzing scale from 0 to 3."],
+      "challenge": ["Predict and justify the reaction of calcium with hydrochloric acid, including a hazard assessment."],
+      "homework": "Word equations for four acid-metal reactions.",
+      "exitTicket": "Describe the test for hydrogen and its positive result."
+    },
+    {
+      "id": "u-acids.l4",
+      "title": "Naming and making salts",
+      "objectives": ["Name the salt produced by a given acid and metal", "Plan a method to make a named salt"],
+      "ncRefs": ["cr.6", "cr.7"],
+      "wsRefs": ["ws.3"],
+      "retrieval": ["Acid + metal -> ?", "Name the salt made from hydrochloric acid and sodium."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Four salt-naming questions." },
+        { "phase": "Explanation", "minutes": 15, "detail": "Naming rules: hydrochloric gives chlorides, sulfuric gives sulfates, nitric gives nitrates. Twelve examples drilled." },
+        { "phase": "Planning task", "minutes": 25, "detail": "Pupils write a method to make copper sulfate from copper oxide and sulfuric acid, including a hazard column." },
+        { "phase": "Review", "minutes": 12, "detail": "Compare plans against a model method; refine before next lesson's practical." }
+      ],
+      "practical": null,
+      "keyQuestions": ["Why do we add excess copper oxide?", "How do we know the reaction has finished?"],
+      "support": ["Method steps supplied on cards to sequence rather than write from scratch."],
+      "challenge": ["Suggest how to obtain a pure dry sample and how to check its purity."],
+      "homework": "Name the salts from twelve acid and metal combinations.",
+      "exitTicket": "Name the salt made from nitric acid and magnesium."
+    },
+    {
+      "id": "u-acids.l5",
+      "title": "Making copper sulfate crystals",
+      "objectives": ["Carry out a salt preparation safely and accurately", "Evaluate the purity of the product"],
+      "ncRefs": ["cr.7"],
+      "wsRefs": ["ws.4", "ws.5", "ws.10"],
+      "retrieval": ["State the method steps in order", "Name one hazard in this practical and its control."],
+      "sequence": [
+        { "phase": "Retrieval and safety briefing", "minutes": 10, "detail": "Method recalled by pupils; hazards and controls elicited and confirmed before any apparatus is issued." },
+        { "phase": "Practical", "minutes": 45, "detail": "Warm acid, add excess copper oxide, filter, evaporate partially, leave to crystallise." },
+        { "phase": "Review", "minutes": 5, "detail": "Predict what the crystals will look like next lesson and what could reduce the yield." }
+      ],
+      "practical": "p-making-salt",
+      "keyQuestions": ["Why filter before evaporating?", "Why not evaporate to complete dryness?"],
+      "support": ["Step cards at the bench; teacher-prepared warm acid."],
+      "challenge": ["Calculate the theoretical yield from the mass of copper oxide used."],
+      "homework": "Write up the method in the passive voice with a labelled diagram.",
+      "exitTicket": "Give one reason the yield might be lower than expected."
+    },
+    {
+      "id": "u-acids.l6",
+      "title": "Applying acids and alkalis",
+      "objectives": ["Apply neutralisation to real contexts", "Evaluate data on soil treatment or acid rain"],
+      "ncRefs": ["cr.4", "pt.6"],
+      "wsRefs": ["ws.7", "ws.8"],
+      "retrieval": ["Full recall of the three general equations", "State the pH of lemon juice."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 10, "detail": "Crystals observed and described; equations recalled." },
+        { "phase": "Data task", "minutes": 25, "detail": "Soil pH and crop yield dataset: plot, describe the pattern, recommend a treatment with justification." },
+        { "phase": "Explanation", "minutes": 12, "detail": "Acid rain: link back to non-metal oxides from Unit 3; effects on limestone buildings and lakes." },
+        { "phase": "Review", "minutes": 13, "detail": "Structured extended answer: 'Explain how a farmer should treat acidic soil and why.'" }
+      ],
+      "practical": null,
+      "keyQuestions": ["Why does adding lime help?", "Could a farmer add too much? What would happen?"],
+      "support": ["Graph axes supplied with the first three points plotted."],
+      "challenge": ["Evaluate the reliability of the dataset and identify a confounding variable."],
+      "homework": "Six-mark question on acid rain: causes, effects and one mitigation.",
+      "exitTicket": "Name the substance added to acidic soil and say why."
+    },
+    {
+      "id": "u-acids.l7",
+      "title": "Review and assessment",
+      "objectives": ["Consolidate acid and alkali chemistry", "Demonstrate understanding in an assessment"],
+      "ncRefs": ["cr.4", "cr.5", "cr.6", "cr.7"],
+      "retrieval": ["Full-unit retrieval grid."],
+      "sequence": [
+        { "phase": "Retrieval warm-up", "minutes": 12, "detail": "General equations, salt naming and pH recall from memory." },
+        { "phase": "Assessment", "minutes": 45, "detail": "30-mark assessment including a method question." },
+        { "phase": "Review", "minutes": 3, "detail": "Self-assessment of confidence by topic." }
+      ],
+      "practical": null,
+      "keyQuestions": [],
+      "support": ["Periodic table permitted; reader support as per passports."],
+      "challenge": ["Design a method to make a named salt from an acid and a carbonate."],
+      "homework": "Green-pen corrections.",
+      "exitTicket": "Which general equation will you revise first?"
+    }
+  ]
+}

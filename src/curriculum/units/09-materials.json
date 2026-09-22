@@ -1,0 +1,115 @@
+{
+  "id": "u-materials",
+  "title": "Materials: Ceramics, Polymers and Composites",
+  "strapline": "Choosing the right material for the job, and justifying it with properties.",
+  "bigIdea": "Materials are chosen, not found. Every engineering choice is a trade-off between properties, cost and environmental impact.",
+  "suggestedPosition": 9,
+  "suggestedLessons": 4,
+  "ncRefs": ["mat.3", "pt.5"],
+  "wsRefs": ["ws.3", "ws.5", "ws.6", "ws.8"],
+  "priorKnowledge": ["Unit 3: properties of metals and non-metals.", "Unit 6: metals, corrosion and recycling."],
+  "futureLearning": ["GCSE: polymers and their structures, nanoparticles, life cycle assessment, alloys."],
+  "misconceptions": [
+    { "misconception": "Plastic is a single material.", "whyItSticks": "One everyday word covers dozens of polymers.", "addressIt": "Compare the properties of four named polymers and match each to a use they could not swap." },
+    { "misconception": "Stronger always means better.", "whyItSticks": "Strength is the most familiar property word.", "addressIt": "Use a selection task where the best answer requires flexibility or low density, not strength." },
+    { "misconception": "Composites are just mixtures, so they are nothing new.", "whyItSticks": "Composites are physically combined, not bonded.", "addressIt": "Test concrete with and without reinforcement; the composite property exceeds either component alone." },
+    { "misconception": "Ceramics are always fragile and only used for crockery.", "whyItSticks": "Broken mugs are the reference point.", "addressIt": "Show ceramic uses in body armour and heat shields; distinguish brittle from weak." }
+  ],
+  "keyVocabulary": [
+    { "term": "ceramic", "definition": "A hard, brittle, heat-resistant material made by firing a non-metal mineral." },
+    { "term": "polymer", "definition": "A material made of long chain molecules formed from many repeating units." },
+    { "term": "composite", "definition": "A material made from two or more materials with different properties, combined to give better properties overall." },
+    { "term": "brittle", "definition": "Breaks suddenly without bending or stretching first." },
+    { "term": "tensile strength", "definition": "Resistance to being pulled apart." },
+    { "term": "density", "definition": "Mass per unit volume." }
+  ],
+  "practicals": [
+    { "id": "p-material-testing", "title": "Comparing material properties", "type": "investigation", "apparatus": ["samples: steel, aluminium, ceramic tile, rigid and flexible polymer, wood, carbon fibre offcut", "newton meter or masses and clamp", "conductivity tester", "balance", "measuring cylinder for volume by displacement"], "hazards": ["Falling masses", "Sharp edges on broken ceramic and metal offcuts"], "control": ["Place a cushioned tray beneath suspended masses; feet clear", "Goggles when loading to failure; samples with filed edges only"], "timing": "50 minutes", "wsFocus": ["ws.3", "ws.5", "ws.6"] },
+    { "id": "p-composite-concrete", "title": "Testing a composite against its components", "type": "class", "apparatus": ["plaster of Paris", "straw or fibre reinforcement", "small moulds", "masses and support blocks"], "hazards": ["Plaster sets exothermically and must never be moulded around body parts", "Dust — irritant"], "control": ["Never mould plaster on hands or fingers under any circumstances", "Mix in a well-ventilated area; wear goggles and avoid raising dust"], "timing": "30 minutes to make, 30 minutes to test in a later lesson", "wsFocus": ["ws.5", "ws.8"] }
+  ],
+  "assessment": {
+    "formative": ["Material selection cards: justify a choice against three stated requirements.", "Property vocabulary discrimination: strong, hard, tough, brittle, stiff.", "Peer critique of a material recommendation."],
+    "summative": { "title": "Materials selection task", "style": "20 marks: a design brief requiring a justified material choice supported by property data and one environmental consideration.", "markSchemeNotes": "Credit trade-offs. A top-band answer names a drawback of the chosen material and explains why it is acceptable here." }
+  },
+  "lessons": [
+    {
+      "id": "u-materials.l1",
+      "title": "Properties and how we measure them",
+      "objectives": ["Define key material properties precisely", "Measure properties experimentally", "Present comparative data clearly"],
+      "ncRefs": ["mat.3", "pt.5"],
+      "wsRefs": ["ws.3", "ws.5", "ws.6"],
+      "retrieval": ["Name three properties of metals", "Define density."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Property vocabulary check: distinguish strong, hard, tough and brittle." },
+        { "phase": "Explanation", "minutes": 10, "detail": "Define each property operationally — how would you measure it? Fair test requirements established." },
+        { "phase": "Practical", "minutes": 45, "detail": "Test seven samples for density, conductivity and flexibility; tabulate results." },
+        { "phase": "Review", "minutes": 7, "detail": "Compare group results; discuss variation and precision." }
+      ],
+      "practical": "p-material-testing",
+      "keyQuestions": ["Is glass strong or brittle? Can it be both?", "What must you keep the same to compare flexibility fairly?"],
+      "support": ["Results table with units supplied; density calculation frame."],
+      "challenge": ["Rank the materials by strength-to-weight ratio and comment on the result."],
+      "homework": "Complete the results table and write two comparative conclusions.",
+      "exitTicket": "Give the difference between brittle and weak."
+    },
+    {
+      "id": "u-materials.l2",
+      "title": "Ceramics and polymers",
+      "objectives": ["Describe the properties of ceramics and polymers", "Match materials to appropriate uses"],
+      "ncRefs": ["mat.3"],
+      "retrieval": ["Define brittle", "Which material had the lowest density?"],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Property definitions and last lesson's data recalled." },
+        { "phase": "Explanation", "minutes": 18, "detail": "Ceramics: how they are made and why they are hard, brittle and heat resistant. Polymers: chain molecules, and how chain arrangement changes flexibility." },
+        { "phase": "Independent practice", "minutes": 22, "detail": "Match eight materials to uses; justify each with two properties." },
+        { "phase": "Review", "minutes": 12, "detail": "Surface and correct the 'plastic is one material' misconception using four named polymers." }
+      ],
+      "practical": null,
+      "keyQuestions": ["Why is a ceramic used for a heat shield rather than a metal?", "Why is a carrier bag polymer unsuitable for a kettle?"],
+      "support": ["Property cards supplied alongside the use cards."],
+      "challenge": ["Explain how the structure of a polymer chain accounts for its flexibility."],
+      "homework": "Research and describe one ceramic and one polymer, with uses and properties.",
+      "exitTicket": "Give one property that makes ceramics suitable for oven dishes."
+    },
+    {
+      "id": "u-materials.l3",
+      "title": "Composites",
+      "objectives": ["Explain what a composite is", "Explain why a composite outperforms its components"],
+      "ncRefs": ["mat.3"],
+      "wsRefs": ["ws.5", "ws.8"],
+      "retrieval": ["Define a polymer", "Name a brittle material."],
+      "sequence": [
+        { "phase": "Retrieval starter", "minutes": 8, "detail": "Materials recall, five items." },
+        { "phase": "Explanation", "minutes": 12, "detail": "Matrix and reinforcement explained; reinforced concrete, carbon fibre and plywood as examples." },
+        { "phase": "Practical", "minutes": 30, "detail": "Make and test plaster beams with and without fibre reinforcement; record the load at failure." },
+        { "phase": "Review", "minutes": 10, "detail": "Explain the results: which component provides which property?" }
+      ],
+      "practical": "p-composite-concrete",
+      "keyQuestions": ["Which part resists compression and which resists being pulled apart?", "Why not just use more of the stronger material?"],
+      "support": ["Results table supplied; teacher pre-makes one set of beams."],
+      "challenge": ["Explain why carbon fibre is used in aircraft despite costing far more than aluminium."],
+      "homework": "Explain how reinforced concrete works, with a labelled diagram.",
+      "exitTicket": "Define a composite in one sentence."
+    },
+    {
+      "id": "u-materials.l4",
+      "title": "Material selection task",
+      "objectives": ["Select a material for a design brief", "Justify the choice using property data and environmental impact"],
+      "ncRefs": ["mat.3"],
+      "wsRefs": ["ws.8"],
+      "retrieval": ["Define a composite", "Name two properties of ceramics."],
+      "sequence": [
+        { "phase": "Retrieval warm-up", "minutes": 10, "detail": "Full-unit recall grid." },
+        { "phase": "Assessment task", "minutes": 35, "detail": "Design brief: choose a material for a named product; justify with data; address recyclability." },
+        { "phase": "Peer critique", "minutes": 10, "detail": "Structured peer feedback against the mark scheme." },
+        { "phase": "Review", "minutes": 5, "detail": "Model a top-band answer; pupils identify what made it stronger." }
+      ],
+      "practical": null,
+      "keyQuestions": ["What is the drawback of your chosen material, and why is it acceptable here?", "How does recyclability change your recommendation?"],
+      "support": ["Property data table provided; writing frame with four required sections."],
+      "challenge": ["Compare two viable materials and justify the trade-off explicitly."],
+      "homework": "Improve the response following peer feedback.",
+      "exitTicket": "Name one trade-off you had to make in your choice."
+    }
+  ]
+}
