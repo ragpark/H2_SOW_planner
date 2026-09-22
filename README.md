@@ -67,7 +67,7 @@ docker run -d --name sow-pg -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:
 export DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/postgres
 
 npm start           # http://localhost:3000
-npm test            # 83 tests, against a real PostgreSQL
+npm test            # 97 tests, against a real PostgreSQL
 ```
 
 The schema applies itself on boot, the LTI keypair generates on first use, and
@@ -179,7 +179,7 @@ src/
   routes/                REST API and LTI endpoints
   db/                    PostgreSQL schema, pool, and the one-time SQLite import
 public/                  Zero-build SPA: ES modules, no framework, no bundler
-test/                    83 tests over the planner, API, LTI protocol, config and migration
+test/                    97 tests over the planner, API, LTI protocol, config and migration
   fixtures/spines/       A synthetic curriculum, to prove subject-agnosticism
 Dockerfile               Pinned Node 22, native module built from source
 railway.json             Dockerfile build, /healthz deploy gate, single replica
@@ -251,6 +251,34 @@ curl -X POST "$TOOL_URL/lti/platforms" \
   }'
 ```
 
+### Choosing the curriculum from the LMS
+
+A platform administrator sets a custom parameter on the placement:
+
+```
+subject=physics
+key_stage=KS3      # optional when only one key stage is installed for a subject
+```
+
+or `spine=physics-ks3` to name a curriculum outright. The launch resolves it
+in this order, strongest first:
+
+| | Source | Notes |
+|---|---|---|
+| 1 | The LMS link's own binding | What the link was created for |
+| 2 | `custom.subject` / `custom.spine` | What the platform asked for |
+| 3 | The course's remembered choice | Set when a scheme is bound |
+| 4 | The course name | "Year 9 Physics" — a **suggestion**, never applied silently |
+| 5 | `DEFAULT_SPINE`, or the only installed curriculum | |
+
+Nothing is trusted. Every value is resolved against the installed curricula,
+and an unrecognised one produces a visible notice naming what was asked for
+and what is installed — while the launch still succeeds on a fallback. A
+teacher is never locked out by a typo in an LMS configuration.
+
+The interface always says where the choice came from, so a teacher who did not
+pick the subject can see that their platform did, and correct it.
+
 ### What is implemented
 
 - **OIDC third-party initiated login** with single-use `state` and `nonce`.
@@ -259,6 +287,7 @@ curl -X POST "$TOOL_URL/lti/platforms" \
   deployment check, and LTI version enforcement.
 - **Deep Linking 2.0**: a picker returns a signed `LtiDeepLinkingResponse` with
   `ltiResourceLink` content items, echoing the platform's opaque `data` claim.
+  Items carry their curriculum, so a created link reopens the right subject.
 - **Resource link binding**: relaunching the same LMS link reopens the scheme it
   was bound to.
 - **Role mapping**: Instructor, ContentDeveloper, TeachingAssistant, Mentor,
