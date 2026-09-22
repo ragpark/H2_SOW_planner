@@ -58,23 +58,83 @@ practicals with hazards and controls, and formative and summative assessment.
 ```bash
 npm install
 npm start           # http://localhost:3000
-npm test            # 50 tests
+npm test            # 60 tests
 ```
 
 Zero configuration in development: SQLite creates itself, the LTI keypair
 generates on first use, and standalone sign-in is enabled.
 
-### Production
+### Deploying to Railway
+
+The repository is Railway-ready: `railway.json` selects the Dockerfile build and
+gates the deploy on `/healthz`.
+
+1. **Create the service** from this repo. Railway builds the `Dockerfile`.
+2. **Attach a volume.** This is the one step you must not skip — see below.
+3. **Generate a domain** (Settings → Networking). Nothing else is required:
+   `TOOL_URL` is derived from `RAILWAY_PUBLIC_DOMAIN`, and the database path is
+   derived from the volume mount, so LTI redirect URIs are correct by
+   construction rather than by remembering to set them.
+4. **Set `LTI_ADMIN_TOKEN`** to a long random string if you will register LMS
+   platforms over HTTP. Without it, the registration endpoint stays disabled.
+
+```bash
+railway up                       # from the repo root
+railway variables --set "LTI_ADMIN_TOKEN=$(openssl rand -hex 32)"
+```
+
+#### Attach a volume, or lose everything on the next deploy
+
+A container filesystem is replaced on every deploy. **Without a volume, each
+deploy silently discards every scheme of work *and* every LTI platform
+registration** — teachers lose their planning and the tool stops accepting
+launches until an administrator re-registers each platform.
+
+Attach a Railway volume to the service (any mount path, `/data` is
+conventional). The app reads `RAILWAY_VOLUME_MOUNT_PATH` and puts the database
+inside it automatically. Confirm it worked:
+
+```bash
+curl https://<your-domain>/healthz
+# {"ok":true,"subject":"chemistry","persistent":true,"lti":true}
+```
+
+`"persistent": false` means the database is on ephemeral storage. The app also
+prints a warning on boot in that state, and starts anyway so you can still
+evaluate it.
+
+#### Keep it to one replica
+
+The store is SQLite on a single volume, which one process owns. `railway.json`
+pins `numReplicas` to 1; do not raise it. This is the right trade for a
+department-scale tool — a whole school's schemes of work are a few megabytes —
+but it is the constraint to revisit first if you outgrow it. Moving to Postgres
+means replacing `src/db/index.js` and the queries in `src/services/`; nothing in
+the planner, curriculum or LTI layers depends on SQLite.
+
+#### What Railway handles, and what it does not
+
+Railway terminates TLS and sets `X-Forwarded-*`; the app sets `trust proxy` and
+issues `SameSite=None; Secure` cookies accordingly, which LTI needs in an
+iframe. On redeploy Railway sends `SIGTERM`; the app drains in-flight requests
+and checkpoints the write-ahead log before exiting.
+
+### Production on any other host
 
 ```bash
 NODE_ENV=production \
 TOOL_URL=https://sow-planner.example.school \
-SESSION_SECRET="$(openssl rand -hex 32)" \
+DATABASE_FILE=/var/lib/sow-planner/sow.db \
+DATABASE_PERSISTENT=1 \
 npm start
 ```
 
-The server refuses to boot in production without `TOOL_URL` and
-`SESSION_SECRET`, and requires HTTPS. See `.env.example` for all settings.
+The server refuses to boot in production unless it can resolve a public HTTPS
+URL, and warns if the database looks ephemeral. See `.env.example`.
+
+> There is no `SESSION_SECRET`. Session tokens are 256-bit random opaque values
+> stored in the database and looked up directly, so there is nothing to sign.
+> If one is set, the app tells you it is unused rather than ignoring it.
 
 ## Architecture
 
@@ -94,7 +154,9 @@ src/
   routes/                REST API and LTI endpoints
   db/                    SQLite schema and connection
 public/                  Zero-build SPA: ES modules, no framework, no bundler
-test/                    50 tests over the planner, API and LTI protocol
+test/                    60 tests over the planner, API, LTI protocol and config
+Dockerfile               Pinned Node 22, native module built from source
+railway.json             Dockerfile build, /healthz deploy gate, single replica
 ```
 
 **No build step.** The client is plain ES modules served as-is. The whole

@@ -35,3 +35,15 @@ export function pruneExpired(now = new Date()) {
   d.prepare('DELETE FROM lti_used_nonces WHERE created_at < ?').run(dayAgo);
   d.prepare("DELETE FROM sessions WHERE expires_at < datetime('now')").run();
 }
+
+/** Close the database, checkpointing the write-ahead log. */
+export function closeDb() {
+  if (!db) return;
+  try {
+    db.pragma('wal_checkpoint(TRUNCATE)');
+    db.close();
+  } catch (err) {
+    console.error('error closing database:', err.message);
+  }
+  db = null;
+}

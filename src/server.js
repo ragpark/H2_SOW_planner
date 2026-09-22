@@ -3,7 +3,7 @@ import cookieParser from 'cookie-parser';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertProductionConfig, config } from './config.js';
-import { getDb, pruneExpired } from './db/index.js';
+import { closeDb, getDb, pruneExpired } from './db/index.js';
 import { validateCurriculum } from './curriculum/index.js';
 import { attachSession } from './middleware/auth.js';
 import { apiRouter } from './routes/api.js';
@@ -43,7 +43,21 @@ export function createApp() {
   app.use('/api', apiRouter());
   app.use('/api/lti', ltiRouter());
 
-  app.get('/healthz', (_req, res) => res.json({ ok: true, subject: 'chemistry' }));
+  app.get('/healthz', (_req, res) => {
+    // Railway gates a deploy on this, so it must prove the database is usable,
+    // not merely that the process is up.
+    try {
+      getDb().prepare('SELECT 1').get();
+    } catch (err) {
+      return res.status(503).json({ ok: false, error: 'database unavailable' });
+    }
+    res.json({
+      ok: true,
+      subject: 'chemistry',
+      persistent: config.databaseIsPersistent,
+      lti: config.lti.enabled
+    });
+  });
 
   app.use(express.static(publicDir, { index: 'index.html', maxAge: config.nodeEnv === 'production' ? '1h' : 0 }));
 
@@ -67,16 +81,43 @@ export function createApp() {
 
 const isEntryPoint = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;
 if (isEntryPoint) {
-  const problems = assertProductionConfig();
+  const { problems, warnings } = assertProductionConfig();
   if (problems.length) {
-    console.error('Refusing to start:\n  ' + problems.join('\n  '));
+    console.error('Refusing to start:\n  ' + problems.map((p) => `- ${p}`).join('\n  '));
     process.exit(1);
   }
+  for (const warning of warnings) console.warn(`WARNING: ${warning}`);
+
   const app = createApp();
   pruneExpired();
-  setInterval(() => pruneExpired(), 10 * 60 * 1000).unref();
-  app.listen(config.port, () => {
-    console.log(`SOW Planner listening on ${config.toolUrl} (${config.nodeEnv})`);
+  const pruneTimer = setInterval(() => pruneExpired(), 10 * 60 * 1000);
+  pruneTimer.unref();
+
+  // Bind on all interfaces: a container host routes to the service from outside.
+  const server = app.listen(config.port, '0.0.0.0', () => {
+    console.log(`SOW Planner listening on port ${config.port} as ${config.toolUrl} (${config.nodeEnv})`);
+    console.log(`Database: ${config.databaseFile}${config.databaseIsPersistent ? ' (persistent volume)' : ''}`);
     if (config.lti.enabled) console.log(`LTI tool configuration: ${config.toolUrl}/lti/config.json`);
   });
+
+  // Containers are replaced on every deploy. Finish in-flight requests and
+  // close SQLite cleanly so the write-ahead log is checkpointed.
+  let shuttingDown = false;
+  const shutdown = (signal) => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    console.log(`${signal} received, shutting down`);
+    clearInterval(pruneTimer);
+    server.close(() => {
+      closeDb();
+      process.exit(0);
+    });
+    // Do not hang a deploy if a connection refuses to drain.
+    setTimeout(() => {
+      closeDb();
+      process.exit(0);
+    }, 10_000).unref();
+  };
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 }
