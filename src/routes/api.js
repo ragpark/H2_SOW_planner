@@ -82,27 +82,50 @@ export function apiRouter() {
     });
   });
 
-  /** Resolve the spine a request is asking about, by id or subject/key stage. */
+  /**
+   * Resolve the curriculum a request is asking about. Asking for one that is
+   * not installed is reported differently from not asking at all: the first is
+   * a wrong answer, the second is a missing question.
+   */
   const spineFromQuery = (req) => {
-    if (req.query.spine) return registry.get(String(req.query.spine));
+    const installed = registry.summaries().map((s) => s.id);
+    if (req.query.spine) {
+      const byId = registry.get(String(req.query.spine));
+      return byId
+        ? { spine: byId }
+        : { error: { status: 404, body: { error: `no curriculum "${req.query.spine}" is installed`, installed } } };
+    }
     if (req.query.subject || req.query.keyStage) {
       const fallback = registry.default();
-      return registry.resolve({
-        subject: String(req.query.subject || fallback?.subject || ''),
-        keyStage: String(req.query.keyStage || fallback?.keyStage || '')
-      });
+      const subject = String(req.query.subject || fallback?.subject || '');
+      const keyStage = String(req.query.keyStage || fallback?.keyStage || '');
+      const resolved = registry.resolve({ subject, keyStage });
+      return resolved
+        ? { spine: resolved }
+        : {
+            error: {
+              status: 404,
+              body: { error: `no curriculum is installed for ${subject} at ${keyStage}`, installed }
+            }
+          };
     }
-    return registry.default();
+    const fallback = registry.default();
+    return fallback
+      ? { spine: fallback }
+      : {
+          error: {
+            status: 400,
+            body: {
+              error: 'specify which curriculum with ?spine=, or ?subject= and ?keyStage=',
+              installed
+            }
+          }
+        };
   };
 
   router.get('/curriculum', requireSession, (req, res) => {
-    const spine = spineFromQuery(req);
-    if (!spine) {
-      return res.status(400).json({
-        error: 'specify which curriculum with ?spine=, or ?subject= and ?keyStage=',
-        spines: registry.summaries().map((s) => s.id)
-      });
-    }
+    const { spine, error } = spineFromQuery(req);
+    if (error) return res.status(error.status).json(error.body);
     res.json({
       ...spineSummary(spine),
       strands: spine.strands,

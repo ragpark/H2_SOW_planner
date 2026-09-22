@@ -115,6 +115,19 @@ test('the library can be requested per curriculum', async () => {
   const ambiguous = await call('GET', '/api/curriculum', { token });
   assert.equal(ambiguous.status, 400);
   assert.match(ambiguous.body.error, /specify which curriculum/);
+  assert.deepEqual(ambiguous.body.installed.sort(), ['chemistry-ks3', 'fixtures-ks4']);
+});
+
+test('asking for a curriculum that is not installed says so, and names what is', async () => {
+  // Distinct from not asking at all: this is a wrong answer, not a missing one.
+  const unknownId = await call('GET', '/api/curriculum?spine=physics-ks3', { token });
+  assert.equal(unknownId.status, 404);
+  assert.match(unknownId.body.error, /no curriculum "physics-ks3" is installed/);
+  assert.ok(unknownId.body.installed.includes('chemistry-ks3'));
+
+  const unknownPair = await call('GET', '/api/curriculum?subject=physics&keyStage=KS3', { token });
+  assert.equal(unknownPair.status, 404);
+  assert.match(unknownPair.body.error, /no curriculum is installed for physics at KS3/);
 });
 
 test('a unit or lesson resolves to its owning curriculum without being told', async () => {
