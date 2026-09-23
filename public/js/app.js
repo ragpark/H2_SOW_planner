@@ -10,6 +10,8 @@ const state = {
   session: null,
   capabilities: { standalone: true, lti: true },
   ltiContext: null,
+  // Set when a link asked for a curriculum that is not installed.
+  curriculumNotice: null,
   // Every installed curriculum, and the one the library view is showing.
   catalogue: { spines: [], subjects: [], keyStages: [], default: null },
   activeSpineId: null,
@@ -17,6 +19,105 @@ const state = {
   schemes: [],
   route: { name: 'dashboard', params: {} }
 };
+
+/**
+ * Curriculum asked for in the address bar, as `?subject=physics&keyStage=KS3`
+ * or `?spine=physics-ks3`. Read from the hash query first (`#/library?...`)
+ * and then the ordinary query string, because either is a reasonable thing to
+ * type or to paste into a learning platform as a plain link.
+ */
+function readUrlCurriculum() {
+  const fromHash = new URLSearchParams(location.hash.split('?')[1] || '');
+  const fromSearch = new URLSearchParams(location.search);
+  const pick = (...keys) => {
+    for (const key of keys) {
+      const value = fromHash.get(key) ?? fromSearch.get(key);
+      if (value !== null && value.trim() !== '') return value.trim();
+    }
+    return null;
+  };
+  const requested = {
+    spine: pick('spine', 'curriculum'),
+    subject: pick('subject'),
+    keyStage: pick('keyStage', 'key_stage', 'keystage')
+  };
+  return requested.spine || requested.subject || requested.keyStage ? requested : null;
+}
+
+/**
+ * Match an address-bar request against what is installed. Mirrors how an LTI
+ * launch is resolved: an unrecognised value is reported, never silently
+ * swapped for something else.
+ */
+function resolveFromCatalogue(catalogue, requested) {
+  if (!requested) return null;
+  const spines = catalogue?.spines || [];
+  const installed = spines.map((s) => s.id).join(', ') || 'none';
+  const eq = (a, b) => String(a).toLowerCase() === String(b).toLowerCase();
+
+  if (requested.spine) {
+    const hit = spines.find((s) => eq(s.id, requested.spine));
+    return hit
+      ? { spine: hit }
+      : { error: `No curriculum "${requested.spine}" is installed. Installed: ${installed}.` };
+  }
+
+  if (requested.subject) {
+    const forSubject = spines.filter((s) => eq(s.subject, requested.subject));
+    if (!forSubject.length) {
+      return { error: `No ${requested.subject} curriculum is installed. Installed: ${installed}.` };
+    }
+    if (requested.keyStage) {
+      const hit = forSubject.find((s) => eq(s.keyStage, requested.keyStage));
+      return hit
+        ? { spine: hit }
+        : {
+            error:
+              `No ${requested.subject} curriculum at ${requested.keyStage} is installed. ` +
+              `Installed for ${requested.subject}: ${forSubject.map((s) => s.keyStage).join(', ')}.`
+          };
+    }
+    // A subject alone is enough when only one key stage is installed for it.
+    return forSubject.length === 1
+      ? { spine: forSubject[0] }
+      : {
+          error:
+            `More than one key stage is installed for ${requested.subject}. ` +
+            `Add keyStage=: ${forSubject.map((s) => s.keyStage).join(', ')}.`
+        };
+  }
+
+  const forKeyStage = spines.filter((s) => eq(s.keyStage, requested.keyStage));
+  return forKeyStage.length === 1
+    ? { spine: forKeyStage[0] }
+    : { error: `Give a subject as well as ${requested.keyStage}. Installed: ${installed}.` };
+}
+
+/**
+ * Keep the address bar in step with the curriculum on screen, so the page can
+ * be bookmarked, shared with a colleague, or pasted into a learning platform
+ * as a plain link.
+ */
+function writeCurriculumToUrl(spine) {
+  if (!spine || (state.catalogue.spines || []).length < 2) return;
+  const url = new URL(location.href);
+  url.searchParams.set('subject', spine.subject);
+  url.searchParams.set('keyStage', spine.keyStage);
+  url.searchParams.delete('spine');
+  url.searchParams.delete('curriculum');
+
+  // Strip the same keys from the hash so one answer is not stated twice.
+  const [path, hashQuery] = location.hash.split('?');
+  if (hashQuery) {
+    const params = new URLSearchParams(hashQuery);
+    for (const key of ['spine', 'curriculum', 'subject', 'keyStage', 'key_stage', 'keystage']) {
+      params.delete(key);
+    }
+    const rest = params.toString();
+    url.hash = rest ? `${path}?${rest}` : path;
+  }
+  history.replaceState(null, '', url);
+}
 
 /** Remember the last curriculum browsed, per viewer. */
 const LAST_SPINE_KEY = 'sow.spine';
@@ -75,8 +176,9 @@ async function boot() {
   }
 
   await loadShellData();
-  window.addEventListener('hashchange', () => {
+  window.addEventListener('hashchange', async () => {
     closeDrawer();
+    await applyUrlCurriculum();
     render();
   });
   render();
@@ -92,14 +194,19 @@ async function loadShellData() {
   state.schemes = schemes;
   state.ltiContext = ltiContext?.lti ? ltiContext : null;
 
-  // Choose which curriculum to show. A learning platform that named one
-  // outranks what this browser happened to look at last — except where the
-  // choice was only inferred from a course name, which is a suggestion.
+  // Choose which curriculum to show. An address-bar parameter is the most
+  // immediate statement of intent, so it outranks everything; then a learning
+  // platform that named one; then what this browser last looked at.
   const ids = catalogue.spines.map((s) => s.id);
+  const requested = readUrlCurriculum();
+  const fromUrl = resolveFromCatalogue(catalogue, requested);
+  state.curriculumNotice = fromUrl?.error || null;
+
   const fromLti = state.ltiContext?.curriculum?.spineId;
   const ltiIsAuthoritative = fromLti && state.ltiContext.curriculum.source !== 'default';
   const remembered = recallSpine();
   state.activeSpineId =
+    fromUrl?.spine?.id ||
     (state.activeSpineId && ids.includes(state.activeSpineId) && state.activeSpineId) ||
     (ltiIsAuthoritative && ids.includes(fromLti) && fromLti) ||
     (remembered && ids.includes(remembered) && remembered) ||
@@ -107,13 +214,40 @@ async function loadShellData() {
     ids[0] ||
     null;
 
+  // A link that named a curriculum has been honoured; remember it as this
+  // viewer's choice so moving around the app stays on the same subject.
+  if (fromUrl?.spine) rememberSpine(fromUrl.spine.id);
+
   state.library = state.activeSpineId ? await api.curriculum(state.activeSpineId) : null;
+}
+
+/**
+ * Apply whatever curriculum the current address names. Called on every hash
+ * change as well as on boot, because moving between views is a same-document
+ * navigation — without this, a link carrying `#/library?subject=physics` would
+ * be silently ignored.
+ */
+async function applyUrlCurriculum() {
+  const requested = readUrlCurriculum();
+  if (!requested) {
+    state.curriculumNotice = null;
+    return;
+  }
+  const resolved = resolveFromCatalogue(state.catalogue, requested);
+  state.curriculumNotice = resolved?.error || null;
+  if (!resolved?.spine || resolved.spine.id === state.activeSpineId) return;
+
+  state.activeSpineId = resolved.spine.id;
+  rememberSpine(resolved.spine.id);
+  state.library = await api.curriculum(resolved.spine.id);
 }
 
 export async function setActiveSpine(spineId) {
   if (!spineId || spineId === state.activeSpineId) return;
   state.activeSpineId = spineId;
   rememberSpine(spineId);
+  state.curriculumNotice = null;
+  writeCurriculumToUrl((state.catalogue.spines || []).find((s) => s.id === spineId));
   state.library = await api.curriculum(spineId);
   render();
 }
@@ -215,10 +349,18 @@ async function render() {
   const inner = main.firstElementChild;
   const canEdit = state.session.permissions.canEdit;
 
+  const notice = state.curriculumNotice
+    ? el('div', { class: 'callout', style: { marginBottom: '1.25rem' } },
+        el('strong', { text: 'Curriculum not found. ' }),
+        `${state.curriculumNotice} Showing ${state.library?.title || 'the default curriculum'} instead.`
+      )
+    : null;
+  const show = (content) => mount(inner, notice, content);
+
   try {
     if (state.route.name === 'scheme') {
       const detail = await api.scheme(state.route.params.id);
-      mount(inner, schemeView({
+      show(schemeView({
         detail,
         library: state.library,
         tab: state.route.params.tab,
@@ -236,20 +378,20 @@ async function render() {
         state.ltiContext.boundSchemeId = state.route.params.id;
       }
     } else if (state.route.name === 'library') {
-      mount(inner, libraryView({
+      show(libraryView({
         library: state.library,
         catalogue: state.catalogue,
         onSpineChange: setActiveSpine
       }));
     } else if (state.route.name === 'deepLink') {
-      mount(inner, deepLinkView({
+      show(deepLinkView({
         schemes: state.schemes,
         library: state.library,
         catalogue: state.catalogue,
         ltiContext: state.ltiContext
       }));
     } else {
-      mount(inner, dashboardView({
+      show(dashboardView({
         schemes: state.schemes,
         library: state.library,
         catalogue: state.catalogue,

@@ -67,7 +67,7 @@ docker run -d --name sow-pg -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:
 export DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/postgres
 
 npm start           # http://localhost:3000
-npm test            # 97 tests, against a real PostgreSQL
+npm test            # 104 tests, against a real PostgreSQL
 ```
 
 The schema applies itself on boot, the LTI keypair generates on first use, and
@@ -179,14 +179,24 @@ src/
   routes/                REST API and LTI endpoints
   db/                    PostgreSQL schema, pool, and the one-time SQLite import
 public/                  Zero-build SPA: ES modules, no framework, no bundler
-test/                    97 tests over the planner, API, LTI protocol, config and migration
+test/                    104 tests over the planner, API, LTI protocol, config and migration
+  browser.test.js        Real-browser tests; skipped when no chromium is present
   fixtures/spines/       A synthetic curriculum, to prove subject-agnosticism
 Dockerfile               Pinned Node 22, native module built from source
 railway.json             Dockerfile build, /healthz deploy gate, single replica
 ```
 
 **No build step.** The client is plain ES modules served as-is. The whole
-runtime is Express, pg, cookie-parser and jose. (`better-sqlite3` remains only
+runtime is Express, pg, cookie-parser and jose. Playwright is the one dev
+dependency, for the browser tests; `npm ci --omit=dev` (what the Dockerfile
+runs) leaves it out.
+
+**Some things only a browser can catch.** Two bugs here were invisible to
+tests that drive the API over fetch: an inline script on the LTI landing page
+that the tool's own Content-Security-Policy silently blocked, leaving every
+launch stuck forever; and a hash navigation that ignored the curriculum in the
+URL. `test/browser.test.js` guards both, and skips itself where no browser is
+available. (`better-sqlite3` remains only
 to read a pre-Postgres file during the one-time import.)
 
 **The planner is pure.** `services/planner.js` does no I/O — calendars,
@@ -250,6 +260,27 @@ curl -X POST "$TOOL_URL/lti/platforms" \
     "deploymentIds": ["1:abc123"]
   }'
 ```
+
+### Choosing the curriculum from a link
+
+The app itself takes the same parameters, so a plain URL opens the right
+curriculum — bookmarkable, shareable, and pasteable into a learning platform
+as an ordinary link:
+
+```
+https://your-host/?subject=physics&keyStage=KS3          dashboard, physics preselected
+https://your-host/#/library?subject=physics              unit library, physics
+https://your-host/?spine=physics-ks3#/library            by curriculum id
+```
+
+`keyStage` is optional when only one is installed for that subject. The
+parameter is read on first load *and* on in-app navigation, so a link carrying
+it in the hash works too. Switching curriculum in the interface writes the
+choice back into the address bar, so the page you are looking at is always the
+page you can share.
+
+An unrecognised subject or key stage is reported on screen — naming what was
+asked for and what is installed — and the app falls back rather than breaking.
 
 ### Choosing the curriculum from the LMS
 
