@@ -96,6 +96,7 @@ export function dashboardView({ schemes, library, catalogue, canEdit, reload, lt
     const explain = {
       link: title && `This link opens ${title}.`,
       custom: title && `Your learning platform selected ${title}${requested ? ` (asked for "${requested}")` : ''}.`,
+      'link-url': title && `This link's address selected ${title}${requested ? ` (asked for "${requested}")` : ''}.`,
       context: title && `This course used ${title} last time.`,
       inferred: title && `Suggested ${title} from the course name${inferredFrom ? ` "${inferredFrom}"` : ''} — change it if that is wrong.`
     }[source];

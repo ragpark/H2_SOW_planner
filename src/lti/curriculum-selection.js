@@ -29,6 +29,34 @@ const readCustom = (custom, names) => {
   return null;
 };
 
+/**
+ * Curriculum named in the query string of the link's own URL. In most learning
+ * platforms the quickest thing a teacher can do is paste a URL, so
+ * `.../lti/launch?subject=physics&keyStage=KS3` has to work as well as a
+ * configured custom parameter.
+ */
+function readTargetLinkUri(targetLinkUri) {
+  if (!targetLinkUri) return {};
+  let params;
+  try {
+    params = new URL(targetLinkUri).searchParams;
+  } catch {
+    return {};
+  }
+  const get = (...names) => {
+    for (const name of names) {
+      const value = params.get(name);
+      if (value && value.trim()) return value.trim();
+    }
+    return null;
+  };
+  return {
+    spine: get('spine', 'curriculum'),
+    subject: get('subject'),
+    keyStage: get('keyStage', 'key_stage', 'keystage')
+  };
+}
+
 /** Year groups imply a key stage when a course name mentions one. */
 function keyStageFromYear(year) {
   const n = Number(year);
@@ -125,13 +153,44 @@ export function selectCurriculum({ launch, binding = null, contextDefaultSpineId
     );
   }
 
-  // 3. What this course settled on last time.
+  // 3. What the link's own URL says.
+  const fromUrl = readTargetLinkUri(launch?.targetLinkUri);
+  if (fromUrl.spine || fromUrl.subject) {
+    const bySpine = fromUrl.spine ? registry.get(fromUrl.spine.toLowerCase()) : null;
+    if (bySpine) {
+      return { spine: bySpine, source: 'link-url', requested: fromUrl.spine, warnings, installed };
+    }
+    if (fromUrl.subject) {
+      const forSubject = registry.list().filter((s) => s.subject === fromUrl.subject.toLowerCase());
+      const resolved = fromUrl.keyStage
+        ? registry.resolve({ subject: fromUrl.subject, keyStage: fromUrl.keyStage })
+        : forSubject.length === 1
+          ? forSubject[0]
+          : null;
+      if (resolved) {
+        return {
+          spine: resolved,
+          source: 'link-url',
+          requested: fromUrl.keyStage ? `${fromUrl.subject} ${fromUrl.keyStage}` : fromUrl.subject,
+          warnings,
+          installed
+        };
+      }
+    }
+    warnings.push(
+      `This link's address asks for ${[fromUrl.spine, fromUrl.subject, fromUrl.keyStage]
+        .filter(Boolean)
+        .join(' ')}, which is not installed.`
+    );
+  }
+
+  // 4. What this course settled on last time.
   if (contextDefaultSpineId) {
     const fromContext = registry.get(contextDefaultSpineId);
     if (fromContext) return { spine: fromContext, source: 'context', warnings, installed };
   }
 
-  // 4. What the course is called — a suggestion only.
+  // 5. What the course is called — a suggestion only.
   const inferred = inferFromContext(launch?.context || {});
   if (inferred) {
     return {
@@ -144,7 +203,7 @@ export function selectCurriculum({ launch, binding = null, contextDefaultSpineId
     };
   }
 
-  // 5. The deployment's own default.
+  // 6. The deployment's own default.
   const fallback = registry.default();
   if (fallback) return { spine: fallback, source: 'default', warnings, installed };
 

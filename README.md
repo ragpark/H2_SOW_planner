@@ -67,7 +67,7 @@ docker run -d --name sow-pg -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:
 export DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/postgres
 
 npm start           # http://localhost:3000
-npm test            # 104 tests, against a real PostgreSQL
+npm test            # 109 tests, against a real PostgreSQL
 ```
 
 The schema applies itself on boot, the LTI keypair generates on first use, and
@@ -179,7 +179,7 @@ src/
   routes/                REST API and LTI endpoints
   db/                    PostgreSQL schema, pool, and the one-time SQLite import
 public/                  Zero-build SPA: ES modules, no framework, no bundler
-test/                    104 tests over the planner, API, LTI protocol, config and migration
+test/                    109 tests over the planner, API, LTI protocol, config and migration
   browser.test.js        Real-browser tests; skipped when no chromium is present
   fixtures/spines/       A synthetic curriculum, to prove subject-agnosticism
 Dockerfile               Pinned Node 22, native module built from source
@@ -284,23 +284,34 @@ asked for and what is installed — and the app falls back rather than breaking.
 
 ### Choosing the curriculum from the LMS
 
-A platform administrator sets a custom parameter on the placement:
+There are two ways to say which curriculum a link opens, and a teacher can use
+either without an administrator's help.
+
+**A custom parameter** on the placement:
 
 ```
 subject=physics
 key_stage=KS3      # optional when only one key stage is installed for a subject
 ```
 
-or `spine=physics-ks3` to name a curriculum outright. The launch resolves it
-in this order, strongest first:
+**Or query parameters on the link's own URL**, which is usually the quicker
+thing for a teacher to do:
+
+```
+https://your-host/lti/launch?subject=physics&keyStage=KS3
+```
+
+Either accepts `spine=physics-ks3` to name a curriculum outright. The launch
+resolves in this order, strongest first:
 
 | | Source | Notes |
 |---|---|---|
-| 1 | The LMS link's own binding | What the link was created for |
-| 2 | `custom.subject` / `custom.spine` | What the platform asked for |
-| 3 | The course's remembered choice | Set when a scheme is bound |
-| 4 | The course name | "Year 9 Physics" — a **suggestion**, never applied silently |
-| 5 | `DEFAULT_SPINE`, or the only installed curriculum | |
+| 1 | The LMS link's own binding | What the link was last used for |
+| 2 | `custom.subject` / `custom.spine` | A configured custom parameter |
+| 3 | Query parameters on the link URL | What the teacher pasted |
+| 4 | The course's remembered choice | Set when a scheme is bound |
+| 5 | The course name | "Year 9 Physics" — a **suggestion**, never applied silently |
+| 6 | `DEFAULT_SPINE`, or the only installed curriculum | |
 
 Nothing is trusted. Every value is resolved against the installed curricula,
 and an unrecognised one produces a visible notice naming what was asked for

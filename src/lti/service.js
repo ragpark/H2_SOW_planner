@@ -160,6 +160,9 @@ export function summariseLaunch({ payload, platform, messageType, deploymentId }
     context: { id: context.id || null, title: context.title || null, label: context.label || null },
     resourceLink: { id: resourceLink.id || null, title: resourceLink.title || null },
     custom: payload[CLAIM.custom] || {},
+    // The URL the link points at. A teacher who pastes a tool URL carrying
+    // ?subject=physics is stating an intent, and it arrives here.
+    targetLinkUri: payload[CLAIM.targetLinkUri] || null,
     returnUrl: presentation.return_url || null,
     deepLinking: payload[CLAIM.deepLinkingSettings] || null,
     deepLinkingData: payload[CLAIM.deepLinkingSettings]?.data || null

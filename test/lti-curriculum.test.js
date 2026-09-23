@@ -62,7 +62,13 @@ after(async () => {
 });
 
 /** Run a whole launch and return the session token plus the LTI context. */
-async function launch({ custom = {}, context = {}, sub = 'teacher-1', resourceLinkId = 'rl-1' } = {}) {
+async function launch({
+  custom = {},
+  context = {},
+  sub = 'teacher-1',
+  resourceLinkId = 'rl-1',
+  targetLinkUri = 'http://localhost/lti/launch'
+} = {}) {
   const login = await tool.call(
     'GET',
     `/lti/login?iss=${encodeURIComponent(issuer)}&client_id=${CLIENT_ID}&login_hint=u`
@@ -78,7 +84,7 @@ async function launch({ custom = {}, context = {}, sub = 'teacher-1', resourceLi
     [CLAIM.messageType]: 'LtiResourceLinkRequest',
     [CLAIM.version]: '1.3.0',
     [CLAIM.deploymentId]: DEPLOYMENT_ID,
-    [CLAIM.targetLinkUri]: 'http://localhost/lti/launch',
+    [CLAIM.targetLinkUri]: targetLinkUri,
     [CLAIM.roles]: [INSTRUCTOR],
     [CLAIM.resourceLink]: { id: resourceLinkId, title: 'Planner' },
     [CLAIM.context]: { id: context.id || 'course-1', title: context.title, label: context.label },
@@ -264,4 +270,62 @@ test('a deep-linked item carries its curriculum back to the platform', async () 
   assert.equal(item.custom.spine, 'chemistry-ks3');
   assert.equal(item.custom.subject, 'chemistry');
   assert.equal(item.custom.key_stage, 'KS3');
+});
+
+
+/* ---------- the teacher's own link ---------- */
+
+test('a teacher pasting a URL with the subject in it selects that curriculum', async () => {
+  // The quickest thing a teacher can do in most platforms is paste a URL, so
+  // query parameters on the link itself have to work.
+  const { ctx } = await launch({
+    context: { id: 'c-url' },
+    resourceLinkId: 'rl-url-1',
+    targetLinkUri: 'http://localhost/lti/launch?subject=physics&keyStage=KS3'
+  });
+  assert.equal(ctx.curriculum.spineId, 'physics-ks3');
+  assert.equal(ctx.curriculum.source, 'link-url');
+  assert.equal(ctx.curriculum.requested, 'physics KS3');
+});
+
+test('a subject alone in the link URL is enough when one key stage is installed', async () => {
+  const { ctx } = await launch({
+    context: { id: 'c-url-subject' },
+    resourceLinkId: 'rl-url-2',
+    targetLinkUri: 'http://localhost/lti/launch?subject=physics'
+  });
+  assert.equal(ctx.curriculum.spineId, 'physics-ks3');
+  assert.equal(ctx.curriculum.source, 'link-url');
+});
+
+test('a configured custom parameter outranks the link URL', async () => {
+  const { ctx } = await launch({
+    custom: { subject: 'chemistry' },
+    context: { id: 'c-url-conflict' },
+    resourceLinkId: 'rl-url-3',
+    targetLinkUri: 'http://localhost/lti/launch?subject=physics'
+  });
+  assert.equal(ctx.curriculum.spineId, 'chemistry-ks3');
+  assert.equal(ctx.curriculum.source, 'custom');
+});
+
+test('an uninstalled subject in the link URL warns and falls back', async () => {
+  const { ctx } = await launch({
+    context: { id: 'c-url-bad' },
+    resourceLinkId: 'rl-url-4',
+    targetLinkUri: 'http://localhost/lti/launch?subject=biology'
+  });
+  assert.equal(ctx.curriculum.spineId, 'chemistry-ks3');
+  assert.equal(ctx.curriculum.source, 'default');
+  assert.ok(ctx.curriculum.warnings.some((w) => /biology/.test(w)));
+});
+
+test('a malformed link URL is ignored rather than throwing', async () => {
+  const { ctx } = await launch({
+    context: { id: 'c-url-junk' },
+    resourceLinkId: 'rl-url-5',
+    targetLinkUri: 'not a url at all'
+  });
+  assert.equal(ctx.lti, true);
+  assert.equal(ctx.curriculum.spineId, 'chemistry-ks3');
 });
